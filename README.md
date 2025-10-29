@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# InstaShorts
+
+A Next.js application with PostgreSQL and Drizzle ORM.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Docker and Docker Compose installed
+- Node.js 20+ and pnpm installed
+
+### Setup
+
+1. **Start the PostgreSQL database:**
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will start PostgreSQL in the background.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Install dependencies:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm install
+```
 
-## Learn More
+3. **Push the database schema:**
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm db:push
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Or if you prefer using migrations:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm db:generate  # Generate migration files
+pnpm db:migrate   # Apply migrations
+```
 
-## Deploy on Vercel
+4. **Start the development server:**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Your app will be running at [http://localhost:3000](http://localhost:3000)
+
+### Database Management
+
+The project uses Drizzle ORM for database management. Here are the available commands:
+
+- **Generate migrations** (after changing schema):
+  ```bash
+  pnpm db:generate
+  ```
+
+- **Run migrations**:
+  ```bash
+  pnpm db:migrate
+  ```
+
+- **Push schema directly** (for development):
+  ```bash
+  pnpm db:push
+  ```
+
+- **Open Drizzle Studio** (visual database browser):
+  ```bash
+  pnpm db:studio
+  ```
+
+### Environment Variables
+
+The `.env.local` file is already configured with:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/instashorts
+```
+
+This connects to the PostgreSQL database running in Docker.
+
+## Project Structure
+
+- `src/app/` - Next.js app directory
+- `src/db/` - Database configuration and schema
+  - `schema.ts` - Drizzle schema definitions
+  - `index.ts` - Database connection
+- `src/actions/` - Server actions
+- `drizzle.config.ts` - Drizzle Kit configuration
+- `docker-compose.yml` - PostgreSQL database configuration
+
+## Useful Commands
+
+**Database:**
+- `docker-compose up -d` - Start PostgreSQL
+- `docker-compose down` - Stop PostgreSQL
+- `docker-compose down -v` - Stop PostgreSQL and delete data
+
+**Development:**
+- `pnpm dev` - Start Next.js dev server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+
+## Server Actions Demo
+
+The homepage demonstrates a basic server action that:
+- Fetches all users from the database
+- Creates new users via a form submission
+
+Server actions are defined in `src/actions/user-actions.ts` and use the `'use server'` directive.
+
+## Tech Stack
+
+- **Framework**: Next.js 16
+- **Database**: PostgreSQL 15
+- **ORM**: Drizzle ORM
+- **Styling**: Tailwind CSS
+- **TypeScript**: Full type safety
