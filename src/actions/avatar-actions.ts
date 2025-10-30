@@ -6,7 +6,7 @@ import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 export interface SaveAvatarInput {
-  userId?: number;
+  userId?: string;
   prompt: string;
   imageUrl: string;
   thumbnailUrl?: string;
@@ -84,7 +84,7 @@ export async function getAvatarById(id: number) {
 /**
  * Get all avatars for a specific user
  */
-export async function getAvatarsByUserId(userId: number) {
+export async function getAvatarsByUserId(userId: string) {
   try {
     const userAvatars = await db
       .select()

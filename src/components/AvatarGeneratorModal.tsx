@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   getSoulStyles,
   generateSoulImageAndWait,
@@ -20,6 +21,7 @@ export default function AvatarGeneratorModal({
   onClose,
   onSuccess,
 }: AvatarGeneratorModalProps) {
+  const { data: session } = useSession();
   const [styles, setStyles] = useState<SoulStyle[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingStyles, setLoadingStyles] = useState(true);
@@ -73,10 +75,10 @@ export default function AvatarGeneratorModal({
       };
 
       console.log('Generating image with params:', params);
-      const job = await generateSoulImageAndWait(params);
+      const result = await generateSoulImageAndWait(params);
 
-      const imageUrl = job.results?.raw?.url;
-      const thumbnailUrl = job.results?.min?.url;
+      const imageUrl = result.job.results?.raw?.url;
+      const thumbnailUrl = result.job.results?.min?.url;
 
       if (imageUrl || thumbnailUrl) {
         const finalImageUrl = imageUrl || thumbnailUrl!;
@@ -85,6 +87,7 @@ export default function AvatarGeneratorModal({
         try {
           const selectedStyle = styles.find((s) => s.id === selectedStyleId);
           await saveAvatar({
+            userId: session?.user?.id,
             prompt: prompt.trim(),
             imageUrl: finalImageUrl,
             thumbnailUrl: thumbnailUrl,
@@ -92,8 +95,9 @@ export default function AvatarGeneratorModal({
             styleName: selectedStyle?.name,
             dimensions: widthAndHeight,
             quality,
-            jobId: job.id,
-            status: job.status,
+            jobId: result.job.id,
+            status: result.job.status,
+            enhancedPrompt: result.enhancedPrompt,
           });
           console.log('Avatar saved to database');
           

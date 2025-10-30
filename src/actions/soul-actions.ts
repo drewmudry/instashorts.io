@@ -251,13 +251,13 @@ export async function pollJobSetUntilComplete(
  * @param params - Text2Image generation parameters
  * @param maxAttempts - Maximum number of polling attempts (default: 60)
  * @param intervalMs - Time between polls in milliseconds (default: 2000)
- * @returns The first completed job with results
+ * @returns The first completed job with results and the enhanced prompt if applicable
  */
 export async function generateSoulImageAndWait(
   params: Text2ImageSoulParams,
   maxAttempts: number = 60,
   intervalMs: number = 2000
-): Promise<Job> {
+): Promise<{ job: Job; enhancedPrompt?: string }> {
   // Generate the image (no webhook needed for local dev)
   const jobSet = await generateSoulImage(params);
 
@@ -272,7 +272,13 @@ export async function generateSoulImageAndWait(
     throw new Error('No job returned from completed job set');
   }
 
-  return completedJob;
+  // Extract enhanced prompt from input_params if it was enhanced
+  const enhancedPrompt = (completedJobSet.input_params?.prompt as string) || undefined;
+
+  return { 
+    job: completedJob,
+    enhancedPrompt: params.enhance_prompt ? enhancedPrompt : undefined
+  };
 }
 
 /**

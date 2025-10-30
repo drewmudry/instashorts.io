@@ -64,10 +64,10 @@ export default function SoulImageGenerator() {
       };
 
       console.log('Generating image with params:', params);
-      const job = await generateSoulImageAndWait(params);
+      const result = await generateSoulImageAndWait(params);
 
-      const imageUrl = job.results?.raw?.url;
-      const thumbnailUrl = job.results?.min?.url;
+      const imageUrl = result.job.results?.raw?.url;
+      const thumbnailUrl = result.job.results?.min?.url;
 
       if (imageUrl || thumbnailUrl) {
         const finalImageUrl = imageUrl || thumbnailUrl!;
@@ -84,8 +84,9 @@ export default function SoulImageGenerator() {
             styleName: selectedStyle?.name,
             dimensions: widthAndHeight,
             quality,
-            jobId: job.id,
-            status: job.status,
+            jobId: result.job.id,
+            status: result.job.status,
+            enhancedPrompt: result.enhancedPrompt,
           });
           console.log('Avatar saved to database');
         } catch (saveError) {

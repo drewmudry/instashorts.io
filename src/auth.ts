@@ -42,7 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       
       // Protected routes - require authentication
-      const protectedRoutes = ['/app', '/gallery'];
+      const protectedRoutes = ['/app', '/gallery', '/my-avatars'];
       if (protectedRoutes.some(route => pathname.startsWith(route))) {
         return !!auth?.user;
       }

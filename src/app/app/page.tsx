@@ -131,6 +131,29 @@ export default function DashboardPage() {
           </button>
 
           <button
+            onClick={() => router.push('/my-avatars')}
+            className="group relative overflow-hidden bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-left hover:border-zinc-400 dark:hover:border-zinc-600 transition-all"
+          >
+            <div className="w-12 h-12 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
+              <svg
+                className="w-6 h-6 text-black dark:text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-black dark:text-white mb-2">My Avatars</h3>
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm">View your personal collection</p>
+          </button>
+
+          <button
             onClick={() => router.push('/gallery')}
             className="group relative overflow-hidden bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-left hover:border-zinc-400 dark:hover:border-zinc-600 transition-all"
           >
@@ -149,31 +172,9 @@ export default function DashboardPage() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-black dark:text-white mb-2">View Gallery</h3>
-            <p className="text-zinc-600 dark:text-zinc-400 text-sm">Browse all your avatars</p>
+            <h3 className="text-xl font-bold text-black dark:text-white mb-2">All Avatars</h3>
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm">Browse the full gallery</p>
           </button>
-
-          <div className="relative overflow-hidden bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
-            <div className="w-12 h-12 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
-              <svg
-                className="w-6 h-6 text-black dark:text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-black dark:text-white mb-2">
-              {avatars.length}
-            </h3>
-            <p className="text-zinc-600 dark:text-zinc-400 text-sm">Total avatars created</p>
-          </div>
         </div>
 
         {/* Recent Avatars */}
