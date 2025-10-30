@@ -3,7 +3,7 @@
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Iridescence from '@/components/Iridescence';
+
 
 export default function SignInPage() {
   const { data: session, status } = useSession();
@@ -18,14 +18,6 @@ export default function SignInPage() {
   if (status === 'loading') {
     return (
       <div className="relative min-h-screen overflow-hidden">
-        <div className="fixed inset-0 z-0">
-          <Iridescence
-            color={[1, 1, 1]}
-            mouseReact={false}
-            amplitude={0.1}
-            speed={1.0}
-          />
-        </div>
         <div className="relative z-10 min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white"></div>
         </div>
@@ -39,16 +31,6 @@ export default function SignInPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Iridescent Background */}
-      <div className="fixed inset-0 z-0">
-        <Iridescence
-          color={[1, 1, 1]}
-          mouseReact={false}
-          amplitude={0.1}
-          speed={1.0}
-        />
-      </div>
-
       {/* Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-md">

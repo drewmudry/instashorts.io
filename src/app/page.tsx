@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
-import AuthButton from '@/components/AuthButton';
-import Iridescence from '@/components/Iridescence';
+import { useEffect, useState } from 'react';
+
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import AuthButton from '@/components/AuthButton';
+
 
 export default function Home() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [loadingMotions, setLoadingMotions] = useState(true);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -17,18 +19,11 @@ export default function Home() {
     }
   }, [status, router]);
 
+
   // Show loading state while checking authentication
   if (status === 'loading') {
     return (
       <div className="relative min-h-screen overflow-hidden">
-        <div className="fixed inset-0 z-0">
-          <Iridescence
-            color={[1, 1, 1]}
-            mouseReact={false}
-            amplitude={0.1}
-            speed={1.0}
-          />
-        </div>
         <div className="relative z-10 min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white"></div>
         </div>
@@ -43,15 +38,6 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Iridescent Background */}
-      <div className="fixed inset-0 z-0">
-        <Iridescence
-          color={[1, 1, 1]}
-          mouseReact={false}
-          amplitude={0.1}
-          speed={1.0}
-        />
-      </div>
 
       {/* Content Overlay */}
       <div className="relative z-10">
@@ -157,6 +143,30 @@ export default function Home() {
             </div>
           </div>
         </main>
+
+        {/* Motions Section */}
+        <section className="relative py-24 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl sm:text-5xl font-bold text-black dark:text-white mb-4">
+                Dynamic Motions
+              </h2>
+              <p className="text-lg text-black/70 dark:text-white/70 max-w-2xl mx-auto">
+                Bring your avatars to life with our collection of AI-powered motion presets
+              </p>
+            </div>
+
+            {/* CTA */}
+            <div className="text-center mt-12">
+              <button
+                onClick={() => router.push('/signin')}
+                className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-lg hover:scale-105 transition-transform shadow-2xl"
+              >
+                Start Creating Now
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
