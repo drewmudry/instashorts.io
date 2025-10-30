@@ -1,8 +1,9 @@
 import { pgTable, serial, text, timestamp, integer, primaryKey } from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
+import { randomUUID } from 'crypto';
 
 export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => randomUUID()),
   name: text('name'),
   email: text('email').unique(),
   emailVerified: timestamp('email_verified', { mode: 'date' }),
@@ -12,7 +13,7 @@ export const users = pgTable('users', {
 });
 
 export const accounts = pgTable('accounts', {
-  userId: integer('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   type: text('type').$type<AdapterAccountType>().notNull(),
@@ -33,7 +34,7 @@ export const accounts = pgTable('accounts', {
 
 export const sessions = pgTable('sessions', {
   sessionToken: text('session_token').primaryKey(),
-  userId: integer('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   expires: timestamp('expires', { mode: 'date' }).notNull(),
@@ -51,7 +52,7 @@ export const verificationTokens = pgTable('verification_tokens', {
 
 export const avatars = pgTable('avatars', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id),
+  userId: text('user_id').references(() => users.id),
   prompt: text('prompt').notNull(),
   imageUrl: text('image_url').notNull(),
   thumbnailUrl: text('thumbnail_url'),

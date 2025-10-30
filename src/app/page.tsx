@@ -1,132 +1,163 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import AvatarMasonry from '@/components/AvatarMasonry';
-import AvatarGeneratorModal from '@/components/AvatarGeneratorModal';
+import { useEffect } from 'react';
 import AuthButton from '@/components/AuthButton';
-import { getAvatars } from '@/actions/avatar-actions';
-
-interface Avatar {
-  id: number;
-  userId: number | null;
-  prompt: string;
-  imageUrl: string;
-  thumbnailUrl: string | null;
-  styleId: string | null;
-  styleName: string | null;
-  dimensions: string;
-  quality: string;
-  jobId: string;
-  status: string;
-  enhancedPrompt: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import Iridescence from '@/components/Iridescence';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function Home() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [avatars, setAvatars] = useState<Avatar[]>([]);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { data: session, status } = useSession();
 
-  const loadAvatars = async () => {
-    try {
-      setLoading(true);
-      const fetchedAvatars = await getAvatars(100);
-      setAvatars(fetchedAvatars as Avatar[]);
-    } catch (error) {
-      console.error('Failed to load avatars:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Redirect authenticated users to dashboard
   useEffect(() => {
-    loadAvatars();
-  }, []);
+    if (status === 'authenticated') {
+      router.push('/app');
+    }
+  }, [status, router]);
 
-  const handleGenerateSuccess = () => {
-    loadAvatars();
-  };
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="relative min-h-screen overflow-hidden">
+        <div className="fixed inset-0 z-0">
+          <Iridescence
+            color={[1, 1, 1]}
+            mouseReact={false}
+            amplitude={0.1}
+            speed={1.0}
+          />
+        </div>
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render landing page if authenticated (will redirect)
+  if (session) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-zinc-200 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-black dark:text-zinc-50">
-                InstaShorts
-              </h1>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                AI-powered avatars with Higgsfield Soul
-              </p>
-            </div>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Iridescent Background */}
+      <div className="fixed inset-0 z-0">
+        <Iridescence
+          color={[1, 1, 1]}
+          mouseReact={false}
+          amplitude={0.1}
+          speed={1.0}
+        />
+      </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
+      {/* Content Overlay */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="absolute top-0 left-0 right-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-black/10 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                  <span className="text-xl font-bold">🎬</span>
+                </div>
+                <h1 className="text-xl font-bold text-black dark:text-white">
+                  InstaShorts
+                </h1>
+              </div>
+
               <AuthButton />
+            </div>
+          </div>
+        </header>
+
+        {/* Hero Section */}
+        <main className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Main Heading */}
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-black dark:text-white mb-6 tracking-tight">
+              Create Stunning
+              <br />
+              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+                AI Avatars
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-lg sm:text-xl md:text-2xl text-black/70 dark:text-white/70 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Transform your ideas into beautiful AI-powered avatars with Higgsfield Soul.
+              Professional quality in seconds.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black font-medium hover:opacity-80 transition-opacity shadow-lg"
+                onClick={() => router.push('/signin')}
+                className="group relative px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-lg hover:scale-105 transition-transform shadow-2xl"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                <span className="hidden sm:inline">Create Avatar</span>
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  Get Started
+                </span>
+              </button>
+
+              <button
+                onClick={() => router.push('/signin')}
+                className="px-8 py-4 bg-white/20 dark:bg-black/20 backdrop-blur-sm text-black dark:text-white rounded-full font-semibold text-lg hover:bg-white/30 dark:hover:bg-black/30 transition-all border border-black/10 dark:border-white/10"
+              >
+                Sign In
               </button>
             </div>
+
+            {/* Features */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <div className="bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-black/10 dark:border-white/10">
+                <div className="text-3xl mb-3">⚡</div>
+                <h3 className="text-lg font-semibold text-black dark:text-white mb-2">
+                  Lightning Fast
+                </h3>
+                <p className="text-sm text-black/60 dark:text-white/60">
+                  Generate professional avatars in seconds with cutting-edge AI
+                </p>
+              </div>
+
+              <div className="bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-black/10 dark:border-white/10">
+                <div className="text-3xl mb-3">🎨</div>
+                <h3 className="text-lg font-semibold text-black dark:text-white mb-2">
+                  Multiple Styles
+                </h3>
+                <p className="text-sm text-black/60 dark:text-white/60">
+                  Choose from various artistic styles to match your vision
+                </p>
+              </div>
+
+              <div className="bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-6 border border-black/10 dark:border-white/10">
+                <div className="text-3xl mb-3">✨</div>
+                <h3 className="text-lg font-semibold text-black dark:text-white mb-2">
+                  HD Quality
+                </h3>
+                <p className="text-sm text-black/60 dark:text-white/60">
+                  Get stunning 1080p results perfect for any platform
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading ? (
-          <div className="flex items-center justify-center py-32">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white"></div>
-          </div>
-        ) : (
-          <AvatarMasonry avatars={avatars} />
-        )}
-      </main>
-
-      {/* Floating Action Button (Mobile) */}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 sm:hidden p-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-medium hover:opacity-80 transition-opacity shadow-2xl"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-      </button>
-
-      {/* Generator Modal */}
-      <AvatarGeneratorModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={handleGenerateSuccess}
-      />
+        </main>
+      </div>
     </div>
   );
 }

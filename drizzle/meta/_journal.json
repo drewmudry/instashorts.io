@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1761723628731,
-      "tag": "0000_shallow_mystique",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1761759021892,
-      "tag": "0001_silent_darkhawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1761764351885,
-      "tag": "0002_glossy_black_tom",
+      "when": 1761785813996,
+      "tag": "0000_fine_terror",
       "breakpoints": true
     }
   ]

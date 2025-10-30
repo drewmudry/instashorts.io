@@ -192,7 +192,7 @@ export default function AvatarGeneratorModal({
                         type="button"
                         onClick={() => setSelectedStyleId(style.id)}
                         disabled={loading}
-                        className={`flex-shrink-0 w-32 snap-start group ${
+                        className={`flex-shrink-0 w-32 snap-start group flex flex-col ${
                           loading ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
                       >
@@ -230,23 +230,24 @@ export default function AvatarGeneratorModal({
                           )}
                         </div>
                         
-                        {/* Style Name */}
-                        <p
-                          className={`mt-2 text-xs font-medium text-center transition-colors ${
-                            selectedStyleId === style.id
-                              ? 'text-black dark:text-white'
-                              : 'text-zinc-600 dark:text-zinc-400'
-                          }`}
-                        >
-                          {style.name}
-                        </p>
-                        
-                        {/* Description (if available) */}
-                        {style.description && (
-                          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500 text-center line-clamp-2">
-                            {style.description}
+                        {/* Text Container with Fixed Height */}
+                        <div className="mt-2 h-14 flex flex-col">
+                          {/* Style Name */}
+                          <p
+                            className={`text-xs font-medium text-center transition-colors ${
+                              selectedStyleId === style.id
+                                ? 'text-black dark:text-white'
+                                : 'text-zinc-600 dark:text-zinc-400'
+                            }`}
+                          >
+                            {style.name}
                           </p>
-                        )}
+                          
+                          {/* Description (if available) - with fixed height space */}
+                          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500 text-center line-clamp-2 flex-1">
+                            {style.description || '\u00A0'}
+                          </p>
+                        </div>
                       </button>
                     ))}
                   </div>

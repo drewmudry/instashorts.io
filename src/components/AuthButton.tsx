@@ -45,7 +45,7 @@ export default function AuthButton() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => signOut()}
+            onClick={() => signOut({ callbackUrl: '/' })}
             className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
           >
             Sign out

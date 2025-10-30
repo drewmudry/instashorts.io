@@ -32,6 +32,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
+    authorized: async ({ auth, request }) => {
+      const { pathname } = request.nextUrl;
+      
+      // Public routes - no authentication required
+      const publicRoutes = ['/', '/signin'];
+      if (publicRoutes.includes(pathname)) {
+        return true;
+      }
+      
+      // Protected routes - require authentication
+      const protectedRoutes = ['/app', '/gallery'];
+      if (protectedRoutes.some(route => pathname.startsWith(route))) {
+        return !!auth?.user;
+      }
+      
+      // All other routes require authentication by default
+      return !!auth?.user;
+    },
   },
 });
 
