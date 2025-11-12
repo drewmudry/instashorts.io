@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import { SignInModal } from "@/components/sign-in-modal";
 
 export default function Home() {
   const { data: session, isPending } = authClient.useSession();
@@ -27,15 +27,14 @@ export default function Home() {
                 <span className="text-sm text-zinc-600 dark:text-zinc-400">
                   {session.user.email}
                 </span>
-                <Button
-                  variant="outline"
-                  onClick={() => authClient.signOut()}
-                >
-                  Sign Out
+                <Button variant="outline" asChild>
+                  <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
               </>
             ) : (
-              <SignInModal />
+              <Button variant="outline" asChild>
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
             )}
           </div>
         </div>
@@ -50,21 +49,16 @@ export default function Home() {
           <p className="mb-8 text-xl text-zinc-600 dark:text-zinc-400 sm:text-2xl">
             Create amazing short-form content with ease
           </p>
-          {session?.user ? (
-            <div className="rounded-lg border bg-zinc-50 p-8 dark:bg-zinc-900">
-              <p className="text-lg text-zinc-700 dark:text-zinc-300">
-                You're signed in as{" "}
-                <span className="font-semibold">{session.user.email}</span>
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <SignInModal trigger={<Button size="lg">Get Started</Button>} />
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
-            </div>
-          )}
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <Button size="lg" asChild>
+              <Link href={session?.user ? "/dashboard" : "/sign-in"}>
+                Get Started
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg">
+              Learn More
+            </Button>
+          </div>
         </div>
       </main>
     </div>
