@@ -29,6 +29,46 @@ export const generateScript = inngest.createFunction(
     //   name: "video/script.generated",
     //   data: { videoId }
     // });
+    await inngest.send({
+      name: "video/status.set",
+      data: { videoId, status: "GENERATING" },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 2-second delay
+
+
+    await inngest.send({
+      name: "video/status.set",
+      data: { videoId, status: "COMPLETED" },
+    });
+
+    return { message: `Script generated for video ${videoId}` };
+  }
+);
+
+export const updateVidoStatus = inngest.createFunction(
+  { id: "update-video-status" },
+  { event: "video/" }, // This function triggers on this event
+  async ({ event }) => {
+    const { videoId, status } = event.data;
+
+    // You could then trigger the *next* step, e.g., scene generation
+    // await inngest.send({
+    //   name: "video/script.generated",
+    //   data: { videoId }
+    // });
+    await inngest.send({
+      name: "video/status.set",
+      data: { videoId, status: "GENERATING" },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 2-second delay
+
+
+    await inngest.send({
+      name: "video/status.set",
+      data: { videoId, status: "COMPLETED" },
+    });
 
     return { message: `Script generated for video ${videoId}` };
   }

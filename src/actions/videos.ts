@@ -39,7 +39,7 @@ export async function createVideo(formData: FormData) {
 
     // 2. Send an event to Inngest to kick off the job
     await inngest.send({
-      name: "video/created", // This name matches your function trigger
+      name: "video/created",
       data: {
         videoId: newVideoId,
       },

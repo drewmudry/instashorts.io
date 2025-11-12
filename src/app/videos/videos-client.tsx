@@ -52,7 +52,6 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Standalone Videos</h2>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -109,9 +108,9 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
 
       <div className="rounded-lg border bg-zinc-50 p-8 dark:bg-zinc-900">
         {videos.length === 0 ? (
-          <p className="text-zinc-600 dark:text-zinc-400">
-            You haven't created any standalone videos yet.
-          </p>
+          <div className="py-8 text-center text-zinc-600 dark:text-zinc-400">
+            No videos yet.
+          </div>
         ) : (
           <div className="space-y-4">
             {videos.map((video) => (

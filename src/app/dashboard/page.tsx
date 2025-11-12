@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { DashboardNav } from "@/components/dashboard-nav";
-import Link from "next/link";
+import { Sidebar } from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
+import { Film } from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const sessionData = await auth.api.getSession({
@@ -15,37 +16,43 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <DashboardNav />
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar />
+      
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-8">
+          <div className="mx-auto max-w-4xl">
+            {/* Welcome Section */}
+            <div className="mb-8 rounded-lg border bg-card p-8">
+              <h1 className="mb-2 text-3xl font-bold">Welcome to InstaShorts</h1>
+              <p className="mb-6 text-muted-foreground">
+                Create faceless videos using AI, in seconds.
+              </p>
+              <Button size="lg" asChild>
+                <Link href="/videos">
+                  <Film className="mr-2 h-5 w-5" />
+                  Create New Video
+                </Link>
+              </Button>
+            </div>
 
-      {/* Dashboard Content */}
-      <main className="flex-1 px-4 py-16">
-        <div className="container mx-auto max-w-4xl">
-          <h1 className="mb-6 text-center text-5xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-6xl">
-            Welcome to Your Dashboard
-          </h1>
-          
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <Link href="/videos">
-              <div className="rounded-lg border bg-zinc-50 p-8 transition-colors hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800">
-                <h2 className="mb-2 text-2xl font-semibold">Videos</h2>
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  View and manage your standalone videos
-                </p>
+            {/* Recent Videos Section */}
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <Film className="h-5 w-5" />
+                <h2 className="text-xl font-semibold">Recent videos</h2>
               </div>
-            </Link>
-
-            <Link href="/series">
-              <div className="rounded-lg border bg-zinc-50 p-8 transition-colors hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800">
-                <h2 className="mb-2 text-2xl font-semibold">Series</h2>
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  View and manage your video series
-                </p>
+              <p className="text-sm text-muted-foreground">
+                Recently created videos
+              </p>
+              <div className="mt-4 min-h-[200px] rounded-lg border-2 border-dashed p-8 text-center">
+                <p className="text-muted-foreground">No videos yet</p>
               </div>
-            </Link>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

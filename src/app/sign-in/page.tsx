@@ -59,6 +59,18 @@ export default function SignInPage() {
     }
   };
 
+  const handleDiscordSignIn = async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      await authClient.signIn.social({ provider: "discord" });
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err?.message || "An error occurred");
+      setIsLoading(false);
+    }
+  };
+
   // Don't render the form if we're pending or already logged in
   if (isPending || session?.user) {
     return (
@@ -158,6 +170,16 @@ export default function SignInPage() {
           disabled={isLoading}
         >
           Continue with Google
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3 w-full"
+          onClick={handleDiscordSignIn}
+          disabled={isLoading}
+        >
+          Continue with Discord
         </Button>
 
         <div className="mt-4 text-center text-sm">
