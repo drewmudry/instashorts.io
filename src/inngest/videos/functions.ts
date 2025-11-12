@@ -23,11 +23,6 @@ export const generateScript = inngest.createFunction(
       })
       .where(eq(video.id, videoId));
 
-    // trigger the next step
-    await inngest.send({
-      name: "video/status.set",
-      data: { videoId, status: "GENERATING" },
-    });
 
     await inngest.send({
       name: "video/status.set",

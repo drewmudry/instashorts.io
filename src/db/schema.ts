@@ -92,18 +92,13 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
 
-// --- NEW VIDEO APP TABLES ---
 
-/**
- * A Series defines a set of consistent settings for generating
- * a collection of videos (e.g., consistent theme, voice, style).
- */
 export const series = pgTable("series", {
   id: text("id").primaryKey(), // Assumes you provide the ID (e.g., CUID)
   name: text("name").notNull(),
   theme: text("theme"),
-  voiceId: text("voiceId"), // e.g., ElevenLabs voice ID
-  captionStyle: jsonb("captionStyle"), // For { color: "...", font: "..." }
+  voiceId: text("voiceId"), 
+  captionStyle: jsonb("captionStyle"), 
 
   // Foreign key to the user who owns this series
   userId: text("userId")
@@ -127,7 +122,7 @@ export const video = pgTable("video", {
   script: text("script"),
   voiceOverUrl: text("voiceOverUrl"),
   videoUrl: text("videoUrl"),
-  captions: jsonb("captions"), // e.g., [{ text, start, end }]
+  captions: jsonb("captions"),
 
   // Foreign key to the user who created the video
   userId: text("userId")

@@ -55,9 +55,7 @@ export async function createVideo(formData: FormData) {
   }
 }
 
-/**
- * Fetches all videos for the currently authenticated user.
- */
+
 export async function getVideos() {
   const sessionData = await auth.api.getSession({
     headers: await headers(),
@@ -81,9 +79,7 @@ export async function getVideos() {
   }
 }
 
-/**
- * Fetches videos that are NOT part of a series for the currently authenticated user.
- */
+
 export async function getVideosNotInSeries() {
   const sessionData = await auth.api.getSession({
     headers: await headers(),
