@@ -119,6 +119,7 @@ export const video = pgTable("video", {
   status: videoStatusEnum("status").default("PENDING").notNull(),
 
   // Final generated assets
+  title: text("title"),
   script: text("script"),
   voiceOverUrl: text("voiceOverUrl"),
   videoUrl: text("videoUrl"),

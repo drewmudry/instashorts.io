@@ -86,6 +86,7 @@ CREATE TABLE "video" (
 	"id" text PRIMARY KEY NOT NULL,
 	"theme" text NOT NULL,
 	"status" "video_status" DEFAULT 'PENDING' NOT NULL,
+	"title" text,
 	"script" text,
 	"voiceOverUrl" text,
 	"videoUrl" text,

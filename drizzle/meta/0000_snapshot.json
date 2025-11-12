@@ -1,5 +1,5 @@
 {
-  "id": "b6facd2d-2086-4b61-a3e6-a1b2cb7b5930",
+  "id": "2f68303b-c4dc-490c-a3a4-a6a4a267c43e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -570,6 +570,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'PENDING'"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "script": {
           "name": "script",
