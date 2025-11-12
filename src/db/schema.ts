@@ -1,9 +1,42 @@
+import { relations } from "drizzle-orm";
 import {
   boolean,
+  integer,
+  jsonb,
+  pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+
+
+// Overall status for the entire video job
+export const videoStatusEnum = pgEnum("video_status", [
+  "PENDING",
+  "GENERATING",
+  "COMPLETED",
+  "FAILED",
+]);
+
+// Status for each individual background task
+export const taskStatusEnum = pgEnum("task_status", [
+  "PENDING",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "FAILED",
+]);
+
+// The specific type of task from your 6-step list
+export const taskTypeEnum = pgEnum("task_type", [
+  "GENERATE_SCRIPT",
+  "GENERATE_SCENES",
+  "GENERATE_VOICEOVER",
+  "GENERATE_IMAGES",
+  "GENERATE_CAPTIONS",
+  "STITCH_VIDEO",
+]);
+
+// --- EXISTING AUTH TABLES ---
 
 // User table for Better Auth
 export const user = pgTable("user", {
@@ -58,3 +91,184 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
+
+// --- NEW VIDEO APP TABLES ---
+
+/**
+ * A Series defines a set of consistent settings for generating
+ * a collection of videos (e.g., consistent theme, voice, style).
+ */
+export const series = pgTable("series", {
+  id: text("id").primaryKey(), // Assumes you provide the ID (e.g., CUID)
+  name: text("name").notNull(),
+  theme: text("theme"),
+  voiceId: text("voiceId"), // e.g., ElevenLabs voice ID
+  captionStyle: jsonb("captionStyle"), // For { color: "...", font: "..." }
+
+  // Foreign key to the user who owns this series
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+/**
+ * Represents a single video to be generated.
+ * Tracks the overall job and stores the final assets.
+ */
+export const video = pgTable("video", {
+  id: text("id").primaryKey(),
+  prompt: text("prompt").notNull(), // The initial theme or prompt for the video
+  status: videoStatusEnum("status").default("PENDING").notNull(),
+
+  // Final generated assets
+  script: text("script"),
+  voiceOverUrl: text("voiceOverUrl"),
+  videoUrl: text("videoUrl"),
+  captions: jsonb("captions"), // e.g., [{ text, start, end }]
+
+  // Foreign key to the user who created the video
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  // Optional foreign key to a series.
+  // If this is NULL, it's a "one-off" video.
+  seriesId: text("seriesId").references(() => series.id, {
+    onDelete: "set null",
+  }),
+
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+/**
+ * Represents one of the N scenes that make up a video.
+ */
+export const scene = pgTable("scene", {
+  id: text("id").primaryKey(),
+  sceneIndex: integer("sceneIndex").notNull(), // For ordering (0, 1, 2...)
+  scriptText: text("scriptText"), // The script text for this specific scene
+  imageUrl: text("imageUrl"), // The generated image for this scene
+
+  // Foreign key to the video this scene belongs to
+  videoId: text("videoId")
+    .notNull()
+    .references(() => video.id, { onDelete: "cascade" }),
+
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+/**
+ * Tracks the status of an individual background task
+ * (e.g., "GENERATE_SCRIPT") for a specific video.
+ * Your Inngest functions will update these rows.
+ */
+export const task = pgTable("task", {
+  id: text("id").primaryKey(),
+  type: taskTypeEnum("type").notNull(),
+  status: taskStatusEnum("status").default("PENDING").notNull(),
+  error: text("error"), // To log any failure messages
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+
+  // Foreign key to the video this task is for
+  videoId: text("videoId")
+    .notNull()
+    .references(() => video.id, { onDelete: "cascade" }),
+
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+// --- RELATIONS ---
+
+
+// Relations for existing Auth tables
+// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session, {
+    relationName: "userSessions",
+  }),
+  accounts: many(account, {
+    relationName: "userAccounts",
+  }),
+  series: many(series, {
+    relationName: "userSeries",
+  }),
+  videos: many(video, {
+    relationName: "userVideos",
+  }),
+}));
+
+// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+    relationName: "userSessions",
+  }),
+}));
+
+// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+    relationName: "userAccounts",
+  }),
+}));
+
+// Relations for the new Video tables
+// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+export const seriesRelations = relations(series, ({ one, many }) => ({
+  user: one(user, {
+    fields: [series.userId],
+    references: [user.id],
+    relationName: "userSeries",
+  }),
+  videos: many(video, {
+    relationName: "seriesVideos",
+  }),
+}));
+
+// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+export const videoRelations = relations(video, ({ one, many }) => ({
+  user: one(user, {
+    fields: [video.userId],
+    references: [user.id],
+    relationName: "userVideos",
+  }),
+  series: one(series, {
+    fields: [video.seriesId],
+    references: [series.id],
+    relationName: "seriesVideos",
+  }),
+  scenes: many(scene, {
+    relationName: "videoScenes",
+  }),
+  tasks: many(task, {
+    relationName: "videoTasks",
+  }),
+}));
+
+// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+export const sceneRelations = relations(scene, ({ one }) => ({
+  video: one(video, {
+    fields: [scene.videoId],
+    references: [video.id],
+    relationName: "videoScenes",
+  }),
+}));
+
+// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+export const taskRelations = relations(task, ({ one }) => ({
+  video: one(video, {
+    fields: [task.videoId],
+    references: [video.id],
+    relationName: "videoTasks",
+  }),
+}));
