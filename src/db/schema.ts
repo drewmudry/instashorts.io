@@ -120,7 +120,7 @@ export const series = pgTable("series", {
  */
 export const video = pgTable("video", {
   id: text("id").primaryKey(),
-  prompt: text("prompt").notNull(), // The initial theme or prompt for the video
+  theme: text("theme").notNull(),
   status: videoStatusEnum("status").default("PENDING").notNull(),
 
   // Final generated assets
@@ -188,7 +188,6 @@ export const task = pgTable("task", {
 
 
 // Relations for existing Auth tables
-// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session, {
     relationName: "userSessions",
@@ -204,7 +203,7 @@ export const userRelations = relations(user, ({ many }) => ({
   }),
 }));
 
-// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
+
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
     fields: [session.userId],
@@ -213,7 +212,6 @@ export const sessionRelations = relations(session, ({ one }) => ({
   }),
 }));
 
-// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
@@ -223,7 +221,6 @@ export const accountRelations = relations(account, ({ one }) => ({
 }));
 
 // Relations for the new Video tables
-// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
 export const seriesRelations = relations(series, ({ one, many }) => ({
   user: one(user, {
     fields: [series.userId],
@@ -235,7 +232,6 @@ export const seriesRelations = relations(series, ({ one, many }) => ({
   }),
 }));
 
-// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
 export const videoRelations = relations(video, ({ one, many }) => ({
   user: one(user, {
     fields: [video.userId],
@@ -255,7 +251,6 @@ export const videoRelations = relations(video, ({ one, many }) => ({
   }),
 }));
 
-// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
 export const sceneRelations = relations(scene, ({ one }) => ({
   video: one(video, {
     fields: [scene.videoId],
@@ -264,7 +259,6 @@ export const sceneRelations = relations(scene, ({ one }) => ({
   }),
 }));
 
-// @ts-expect-error - Known type compatibility issue with drizzle-orm 0.44.7 and strict TypeScript
 export const taskRelations = relations(task, ({ one }) => ({
   video: one(video, {
     fields: [task.videoId],

@@ -1,5 +1,5 @@
 {
-  "id": "8df04e8b-5d33-426d-83c5-ce600d2d60b7",
+  "id": "b6facd2d-2086-4b61-a3e6-a1b2cb7b5930",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -557,8 +557,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "prompt": {
-          "name": "prompt",
+        "theme": {
+          "name": "theme",
           "type": "text",
           "primaryKey": false,
           "notNull": true

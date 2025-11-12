@@ -84,7 +84,7 @@ CREATE TABLE "verification" (
 --> statement-breakpoint
 CREATE TABLE "video" (
 	"id" text PRIMARY KEY NOT NULL,
-	"prompt" text NOT NULL,
+	"theme" text NOT NULL,
 	"status" "video_status" DEFAULT 'PENDING' NOT NULL,
 	"script" text,
 	"voiceOverUrl" text,
