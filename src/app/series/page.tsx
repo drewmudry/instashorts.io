@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { DashboardNav } from "@/components/dashboard-nav";
-import { getSeries } from "@/app/actions/videos";
+import { getSeries } from "@/actions/videos";
 import { SeriesClient } from "./series-client";
 
 export default async function SeriesPage() {

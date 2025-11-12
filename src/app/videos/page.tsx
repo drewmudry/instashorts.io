@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { DashboardNav } from "@/components/dashboard-nav";
-import { getVideosNotInSeries } from "@/app/actions/videos";
+import { getVideosNotInSeries } from "@/actions/videos";
 import { VideosClient } from "./videos-client";
 
 export default async function VideosPage() {

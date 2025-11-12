@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getVideosInSeries } from "@/app/actions/videos";
+import { getVideosInSeries } from "@/actions/videos";
 import { series, video } from "@/db/schema";
 
 type Series = typeof series.$inferSelect;

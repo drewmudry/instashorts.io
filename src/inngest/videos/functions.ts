@@ -19,7 +19,7 @@ export const generateScript = inngest.createFunction(
       .update(video)
       .set({
         script: "THIS IS THE SCRIPT",
-        status: "GENERATING", // Update status to the next step
+        status: "SCRIPT_GENERATED",
       })
       // @ts-expect-error - pnpm hoisting causes multiple drizzle-orm instances, causing type incompatibility
       .where(eq(video.id, videoId));

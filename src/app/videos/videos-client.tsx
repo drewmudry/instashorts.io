@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { createVideo, getVideosNotInSeries } from "@/app/actions/videos";
+import { createVideo, getVideosNotInSeries } from "@/actions/videos";
 import { video } from "@/db/schema";
 import { Plus } from "lucide-react";
 
