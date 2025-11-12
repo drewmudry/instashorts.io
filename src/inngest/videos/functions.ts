@@ -15,27 +15,19 @@ export const generateScript = inngest.createFunction(
     // Simulate script generation
     await new Promise((resolve) => setTimeout(resolve, 2000)); // 2-second delay
 
-    // Update the video in the DB with the new script
     await db
       .update(video)
       .set({
         script: "THIS IS THE SCRIPT",
-        status: "SCRIPT_GENERATED",
+        status: "GENERATING",
       })
       .where(eq(video.id, videoId));
 
-    // You could then trigger the *next* step, e.g., scene generation
-    // await inngest.send({
-    //   name: "video/script.generated",
-    //   data: { videoId }
-    // });
+    // trigger the next step
     await inngest.send({
       name: "video/status.set",
       data: { videoId, status: "GENERATING" },
     });
-
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // 2-second delay
-
 
     await inngest.send({
       name: "video/status.set",
@@ -46,30 +38,17 @@ export const generateScript = inngest.createFunction(
   }
 );
 
-export const updateVidoStatus = inngest.createFunction(
+export const updateVideoStatus = inngest.createFunction(
   { id: "update-video-status" },
-  { event: "video/" }, // This function triggers on this event
+  { event: "video/status.set" },
   async ({ event }) => {
     const { videoId, status } = event.data;
 
-    // You could then trigger the *next* step, e.g., scene generation
-    // await inngest.send({
-    //   name: "video/script.generated",
-    //   data: { videoId }
-    // });
-    await inngest.send({
-      name: "video/status.set",
-      data: { videoId, status: "GENERATING" },
-    });
+    await db
+      .update(video)
+      .set({ status })
+      .where(eq(video.id, videoId));
 
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // 2-second delay
-
-
-    await inngest.send({
-      name: "video/status.set",
-      data: { videoId, status: "COMPLETED" },
-    });
-
-    return { message: `Script generated for video ${videoId}` };
+    return { message: `Status updated for video ${videoId} to ${status}` };
   }
 );
