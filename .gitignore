@@ -33,6 +33,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 instashortsio-7d90bdcd627b.json
+instashortsio-7d90bdcd627b
 
 # vercel
 .vercel
