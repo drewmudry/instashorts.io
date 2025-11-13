@@ -123,7 +123,8 @@ export const video = pgTable("video", {
   script: text("script"),
   voiceOverUrl: text("voiceOverUrl"),
   videoUrl: text("videoUrl"),
-  captions: jsonb("captions"),
+  captions_raw: jsonb("captions_raw"),
+  captions_processed: jsonb("captions_processed"),
 
   // Foreign key to the user who created the video
   userId: text("userId")

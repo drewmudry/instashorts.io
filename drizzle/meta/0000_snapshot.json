@@ -1,5 +1,5 @@
 {
-  "id": "7430bf05-dcab-494e-91ba-cc1f86c6adcf",
+  "id": "a6f35c3a-4e02-4353-98d8-c778cf6d46b8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -595,8 +595,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "captions": {
-          "name": "captions",
+        "captions_raw": {
+          "name": "captions_raw",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "captions_processed": {
+          "name": "captions_processed",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false

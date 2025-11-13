@@ -4,6 +4,7 @@ import {
   generateVoiceoverAndUpload, 
   generateScenes, 
   generateSceneImage,
+  renderFinalVideo,
   updateVideoStatus 
 } from "./videos/functions";
 
@@ -12,5 +13,6 @@ export const allFunctions = [
   generateVoiceoverAndUpload,
   generateScenes,
   generateSceneImage,
+  renderFinalVideo,
   updateVideoStatus,
 ];
