@@ -7,7 +7,7 @@ import { headers } from "next/headers";
 import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { db } from "@/index";
-import { video, series } from "@/db/schema";
+import { video } from "@/db/schema";
 import { inngest } from "@/inngest/client";
 import { desc, eq, isNull, and } from "drizzle-orm";
 
@@ -104,9 +104,9 @@ export async function getVideosNotInSeries() {
 }
 
 /**
- * Fetches all series for the currently authenticated user.
+ * Fetches the 3 most recent videos for the currently authenticated user.
  */
-export async function getSeries() {
+export async function getRecentVideos() {
   const sessionData = await auth.api.getSession({
     headers: await headers(),
   });
@@ -116,41 +116,16 @@ export async function getSeries() {
   }
 
   try {
-    const userSeries = await db
-      .select()
-      .from(series)
-      .where(eq(series.userId, sessionData.user.id))
-      .orderBy(desc(series.createdAt));
-
-    return userSeries;
-  } catch (e: any) {
-    console.error("Failed to fetch series:", e.message);
-    return [];
-  }
-}
-
-/**
- * Fetches all videos in a specific series.
- */
-export async function getVideosInSeries(seriesId: string) {
-  const sessionData = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!sessionData?.user?.id) {
-    return [];
-  }
-
-  try {
-    const seriesVideos = await db
+    const recentVideos = await db
       .select()
       .from(video)
-      .where(and(eq(video.userId, sessionData.user.id), eq(video.seriesId, seriesId)))
-      .orderBy(desc(video.createdAt));
+      .where(eq(video.userId, sessionData.user.id))
+      .orderBy(desc(video.createdAt))
+      .limit(3);
 
-    return seriesVideos;
+    return recentVideos;
   } catch (e: any) {
-    console.error("Failed to fetch videos in series:", e.message);
+    console.error("Failed to fetch recent videos:", e.message);
     return [];
   }
 }
