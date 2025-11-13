@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { Sidebar } from "@/components/sidebar";
-import { getSeries } from "@/actions/videos";
+import { getSeries } from "@/actions/series";
 import { SeriesClient } from "./series-client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getVideosInSeries } from "@/actions/videos";
+import { getVideosInSeries } from "@/actions/series";
 import { series, video } from "@/db/schema";
 
 type Series = typeof series.$inferSelect;
@@ -23,6 +23,51 @@ export function SeriesClient({ initialSeries }: SeriesClientProps) {
   const [seriesVideos, setSeriesVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "Pending";
+      case "GENERATING_VOICEOVER":
+        return "Generating Voice Over";
+      case "GENERATING_SCENES":
+        return "Generating Scenes";
+      case "GENERATING_IMAGES":
+        return "Generating Images";
+      case "QUEUED_FOR_RENDERING":
+        return "Queued for Rendering";
+      case "RENDERING":
+        return "Rendering";
+      case "UPLOADING_FINAL_VIDEO":
+        return "Uploading Final Video";
+      case "COMPLETED":
+        return "Completed";
+      case "FAILED":
+        return "Failed";
+      default:
+        return status;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "COMPLETED":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "GENERATING_VOICEOVER":
+      case "GENERATING_SCENES":
+      case "GENERATING_IMAGES":
+      case "QUEUED_FOR_RENDERING":
+      case "RENDERING":
+      case "UPLOADING_FINAL_VIDEO":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "FAILED":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    }
+  };
 
   const handleSeriesClick = async (seriesItem: Series) => {
     setSelectedSeries(seriesItem);
@@ -106,8 +151,8 @@ export function SeriesClient({ initialSeries }: SeriesClientProps) {
                     <p className="truncate text-zinc-700 dark:text-zinc-300">
                       {video.theme}
                     </p>
-                    <span className="ml-4 flex-shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      {video.status}
+                    <span className={`ml-4 flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(video.status)}`}>
+                      {formatStatus(video.status)}
                     </span>
                   </div>
                 ))}

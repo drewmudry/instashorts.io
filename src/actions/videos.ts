@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { db } from "@/index";
 import { video } from "@/db/schema";
-import { inngest } from "@/inngest/client";
+import { scriptQueue } from "@/queues/client";
 import { desc, eq, isNull, and } from "drizzle-orm";
 
 export async function createVideo(formData: FormData) {
@@ -21,9 +21,15 @@ export async function createVideo(formData: FormData) {
   }
 
   const theme = formData.get("theme") as string;
+  const artStyle = formData.get("artStyle") as string;
+  const captionHighlightColor = (formData.get("captionHighlightColor") as string) || "#FFD700";
 
   if (!theme) {
     return { error: "Theme is required" };
+  }
+
+  if (!artStyle) {
+    return { error: "Art style is required" };
   }
 
   const newVideoId = nanoid(); // Generate a new unique ID
@@ -33,16 +39,17 @@ export async function createVideo(formData: FormData) {
     await db.insert(video).values({
       id: newVideoId,
       theme: theme,
+      artStyle: artStyle,
+      captionHighlightColor: captionHighlightColor,
       userId: sessionData.user.id,
       status: "PENDING", // From your schema.ts
     });
 
-    // 2. Send an event to Inngest to kick off the job
-    await inngest.send({
-      name: "video/created",
-      data: {
-        videoId: newVideoId,
-      },
+    // 2. Enqueue script generation to kick off the job
+    await scriptQueue.add("generate", {
+      videoId: newVideoId,
+      theme: theme,
+      artStyle: artStyle,
     });
 
     // 3. Revalidate the pages to show the new video

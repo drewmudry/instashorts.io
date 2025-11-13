@@ -50,24 +50,49 @@ export interface Scene {
 export async function generateVideoScenes(
   script: string,
   theme: string,
-  sceneCount: number = 3
+  sceneCount: number = 3,
+  artStyle?: string | null
 ): Promise<Scene[]> {
   const model = createChatModel();
+  
+  // Map art style IDs to descriptive prompts
+  const artStylePrompts: Record<string, string> = {
+    "collage": "collage style, layered mixed-media aesthetic, paper cutouts, textured elements, artistic composition",
+    "cinematic": "cinematic style, film-like quality, dramatic lighting, cinematic composition, movie aesthetic",
+    "digital-art": "modern digital art style, digital illustration, vibrant colors, contemporary art",
+    "neon-futuristic": "neon futuristic style, cyberpunk aesthetic, neon lights, futuristic urban environment, vibrant neon colors",
+    "comic-book": "comic book style, bold lines, vibrant colors, stylized illustration, comic art aesthetic",
+    "playground": "playground style, bright and playful cartoon aesthetic, cheerful colors, fun and energetic",
+    "4k-realistic": "ultra-realistic 4K style, photorealistic, high detail, professional photography quality",
+    "cartoon": "cartoon style, classic animation, expressive characters, vibrant colors, animated aesthetic",
+    "kawaii": "kawaii style, cute Japanese aesthetic, pastel colors, adorable characters, soft and sweet",
+    "anime": "anime style, Japanese animation aesthetic, expressive eyes, vibrant colors, anime art",
+    "line-art": "line art style, minimalist black and white line drawings, clean lines, simple elegant",
+    "japanese-ink": "Japanese ink painting style, sumi-e aesthetic, black and red ink, traditional Japanese art",
+  };
+
+  const artStyleDescription = artStyle && artStylePrompts[artStyle] 
+    ? artStylePrompts[artStyle] 
+    : "consistent art style";
+
   const { text } = await generateText({
     model,
     prompt: `Based on this video script and theme, generate ${sceneCount} detailed scenes for a short video.
 
 Script: ${script}
 Theme: ${theme}
+Art Style: ${artStyleDescription}
 
 For each scene, create a detailed image prompt that includes:
-- A consistent art style
-- Color theme and vibe
+- The specified art style: ${artStyleDescription}
+- Color theme and vibe matching the art style
 - Camera/animation style
 - What's happening in the scene
 - Who is doing what (if applicable)
 - Background and foreground details
 - Overall atmosphere and mood
+
+IMPORTANT: All scenes must consistently use the ${artStyleDescription} art style throughout.
 
 Return ONLY a valid JSON array with this exact structure:
 [

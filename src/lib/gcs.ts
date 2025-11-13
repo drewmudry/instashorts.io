@@ -69,12 +69,17 @@ export async function uploadBufferToGCS(
     });
 
     stream.on("finish", async () => {
-      // Note: With uniform bucket-level access enabled, individual file ACLs cannot be set
-      // Make the bucket public at the bucket level if public access is needed
-      // Or use signed URLs for private access
-
-      // Return the public URL (will work if bucket is public, otherwise use signed URLs)
-      resolve(`https://storage.googleapis.com/${bucketName}/${destination}`);
+      try {
+        // Make the file publicly readable
+        await file.makePublic();
+        
+        // Return the public URL
+        resolve(`https://storage.googleapis.com/${bucketName}/${destination}`);
+      } catch (error: any) {
+        // If makePublic fails (e.g., uniform bucket-level access), still return URL
+        console.warn(`Could not make file public: ${error.message}`);
+        resolve(`https://storage.googleapis.com/${bucketName}/${destination}`);
+      }
     });
 
     // Write the buffer to the stream

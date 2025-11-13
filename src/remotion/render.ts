@@ -1,4 +1,4 @@
-import 'server-only'; // Mark this module as server-only
+// Removed server-only import for BullMQ worker compatibility
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 import path from 'path';
@@ -16,6 +16,7 @@ interface RenderVideoOptions {
 		end: number;
 	}>;
 	outputPath: string;
+	captionHighlightColor?: string;
 }
 
 /**
@@ -26,9 +27,10 @@ export async function renderVideo({
 	audioUrl,
 	words,
 	outputPath,
+	captionHighlightColor,
 }: RenderVideoOptions): Promise<string> {
 	// Get the entry point
-	const entryPoint = path.resolve(process.cwd(), 'src/remotion/index.ts');
+	const entryPoint = path.resolve(process.cwd(), 'src/remotion/index.tsx');
 
 	// Bundle the Remotion project
 	console.log('Bundling Remotion project...');
@@ -58,6 +60,7 @@ export async function renderVideo({
 			scenes,
 			audioUrl,
 			words,
+			captionHighlightColor,
 		},
 	});
 

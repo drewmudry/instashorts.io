@@ -1,5 +1,5 @@
 {
-  "id": "a6f35c3a-4e02-4353-98d8-c778cf6d46b8",
+  "id": "1b76b076-b73a-4422-b7b1-94ebe1a0237e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -571,6 +571,19 @@
           "notNull": true,
           "default": "'PENDING'"
         },
+        "artStyle": {
+          "name": "artStyle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "captionHighlightColor": {
+          "name": "captionHighlightColor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#FFD700'"
+        },
         "title": {
           "name": "title",
           "type": "text",
@@ -632,6 +645,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "completedAt": {
+          "name": "completedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -698,7 +717,12 @@
       "schema": "public",
       "values": [
         "PENDING",
-        "GENERATING",
+        "GENERATING_VOICEOVER",
+        "GENERATING_SCENES",
+        "GENERATING_IMAGES",
+        "QUEUED_FOR_RENDERING",
+        "RENDERING",
+        "UPLOADING_FINAL_VIDEO",
         "COMPLETED",
         "FAILED"
       ]

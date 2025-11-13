@@ -13,7 +13,12 @@ import {
 // Overall status for the entire video job
 export const videoStatusEnum = pgEnum("video_status", [
   "PENDING",
-  "GENERATING",
+  "GENERATING_VOICEOVER",
+  "GENERATING_SCENES",
+  "GENERATING_IMAGES",
+  "QUEUED_FOR_RENDERING",
+  "RENDERING",
+  "UPLOADING_FINAL_VIDEO",
   "COMPLETED",
   "FAILED",
 ]);
@@ -118,6 +123,10 @@ export const video = pgTable("video", {
   theme: text("theme").notNull(),
   status: videoStatusEnum("status").default("PENDING").notNull(),
 
+  // Video generation settings
+  artStyle: text("artStyle"), // Art style preset (e.g., "Cinematic", "Digital Art", "4k realistic")
+  captionHighlightColor: text("captionHighlightColor").default("#FFD700"), // Hex color for caption highlight
+
   // Final generated assets
   title: text("title"),
   script: text("script"),
@@ -139,6 +148,7 @@ export const video = pgTable("video", {
 
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  completedAt: timestamp("completedAt"),
 });
 
 /**

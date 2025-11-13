@@ -1,6 +1,6 @@
 CREATE TYPE "public"."task_status" AS ENUM('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."task_type" AS ENUM('GENERATE_SCRIPT', 'GENERATE_SCENES', 'GENERATE_VOICEOVER', 'GENERATE_IMAGES', 'GENERATE_CAPTIONS', 'STITCH_VIDEO');--> statement-breakpoint
-CREATE TYPE "public"."video_status" AS ENUM('PENDING', 'GENERATING', 'COMPLETED', 'FAILED');--> statement-breakpoint
+CREATE TYPE "public"."video_status" AS ENUM('PENDING', 'GENERATING_VOICEOVER', 'GENERATING_SCENES', 'GENERATING_IMAGES', 'QUEUED_FOR_RENDERING', 'RENDERING', 'UPLOADING_FINAL_VIDEO', 'COMPLETED', 'FAILED');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"userId" text NOT NULL,
@@ -86,6 +86,8 @@ CREATE TABLE "video" (
 	"id" text PRIMARY KEY NOT NULL,
 	"theme" text NOT NULL,
 	"status" "video_status" DEFAULT 'PENDING' NOT NULL,
+	"artStyle" text,
+	"captionHighlightColor" text DEFAULT '#FFD700',
 	"title" text,
 	"script" text,
 	"voiceOverUrl" text,
@@ -95,7 +97,8 @@ CREATE TABLE "video" (
 	"userId" text NOT NULL,
 	"seriesId" text,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL
+	"updatedAt" timestamp DEFAULT now() NOT NULL,
+	"completedAt" timestamp
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
