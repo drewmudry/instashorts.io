@@ -146,7 +146,7 @@ export const video = pgTable("video", {
 export const scene = pgTable("scene", {
   id: text("id").primaryKey(),
   sceneIndex: integer("sceneIndex").notNull(), // For ordering (0, 1, 2...)
-  scriptText: text("scriptText"), // The script text for this specific scene
+  imagePrompt: text("imagePrompt"), // The prompt for the image generation
   imageUrl: text("imageUrl"), // The generated image for this scene
 
   // Foreign key to the video this scene belongs to

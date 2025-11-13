@@ -1,5 +1,5 @@
 {
-  "id": "2f68303b-c4dc-490c-a3a4-a6a4a267c43e",
+  "id": "7430bf05-dcab-494e-91ba-cc1f86c6adcf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -127,8 +127,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "scriptText": {
-          "name": "scriptText",
+        "imagePrompt": {
+          "name": "imagePrompt",
           "type": "text",
           "primaryKey": false,
           "notNull": false

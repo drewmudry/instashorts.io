@@ -20,7 +20,7 @@ CREATE TABLE "account" (
 CREATE TABLE "scene" (
 	"id" text PRIMARY KEY NOT NULL,
 	"sceneIndex" integer NOT NULL,
-	"scriptText" text,
+	"imagePrompt" text,
 	"imageUrl" text,
 	"videoId" text NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,

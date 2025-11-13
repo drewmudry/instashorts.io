@@ -1,7 +1,16 @@
 
-import { generateScript } from "./videos/functions";
+import { 
+  generateScript, 
+  generateVoiceoverAndUpload, 
+  generateScenes, 
+  generateSceneImage,
+  updateVideoStatus 
+} from "./videos/functions";
 
 export const allFunctions = [
   generateScript,
-  // ...add other functions here
+  generateVoiceoverAndUpload,
+  generateScenes,
+  generateSceneImage,
+  updateVideoStatus,
 ];
