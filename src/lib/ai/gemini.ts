@@ -19,7 +19,14 @@ export async function generateVideoScript(theme: string): Promise<string> {
   const { text } = await generateText({
     model,
     prompt: `Write a compelling 1 paragraph script for a short video about: ${theme}. Make it engaging, clear, and suitable for a short-form video format. The script should be in paragraph format and should not have any voice changes or other formatting. Be slightly poetic in a way that the listener/reader can appreciate a conclusive story or theme by the end of the script.
-    The script should be approximately 50 words long. `,
+    The script should be approximately 50 words long.
+    
+    IMPORTANT STYLE RULES:
+    - Use simple, direct language. Avoid dashes, em-dashes, or compound words with hyphens.
+    - Write in short, clear sentences. Avoid complex nested phrases.
+    - No parenthetical asides or interjections with dashes.
+    - Keep the flow natural and conversational, not overly literary or academic.
+    - Use straightforward sentence structure without excessive punctuation.`,
   });
   return text;
 }
@@ -46,6 +53,87 @@ export async function generateVideoTitle(theme: string): Promise<string> {
 export interface Scene {
   sceneIndex: number;
   image_prompt: string;
+}
+
+export interface WordWithEmoji {
+  word: string;
+  start: number;
+  end: number;
+  emoji?: string; // Optional emoji for this word
+}
+
+/**
+ * Adds relevant emojis to words in the captions
+ * Returns updated words array with emoji field added to key words
+ */
+export async function addEmojisToWords(
+  words: Array<{ word: string; start: number; end: number }>,
+  script: string,
+  theme: string
+): Promise<WordWithEmoji[]> {
+  const model = createChatModel();
+  
+  const { text } = await generateText({
+    model,
+    prompt: `Given this video script and list of words, identify 8-12 key words that would benefit from an emoji visualization. Choose words that are:
+
+1. Nouns, verbs, or important concepts
+2. Would have a clear, relevant emoji
+3. Spread throughout the script (not all clustered together)
+4. Enhance understanding and engagement
+
+Script: ${script}
+Theme: ${theme}
+
+Words with timing:
+
+${words.map((w, i) => `${i}: "${w.word}" (${w.start}s - ${w.end}s)`).join('\n')}
+
+Return ONLY a JSON object with this structure:
+
+{
+  "emojiWords": [
+    {"index": 5, "word": "Caesar", "emoji": "👑"},
+    {"index": 12, "word": "Roman", "emoji": "🏛️"}
+  ]
+}
+
+Choose emojis that are:
+- Culturally universal and clear
+- Relevant to the word meaning
+- Visually distinct from each other
+- Not overly complex (single emoji, not combinations)
+
+Do not include any text before or after the JSON.`,
+  });
+
+  try {
+    let jsonText = text.trim();
+    if (jsonText.startsWith("```")) {
+      jsonText = jsonText.replace(/^```(?:json)?\s*/i, "");
+      jsonText = jsonText.replace(/\s*```$/i, "");
+      jsonText = jsonText.trim();
+    }
+
+    const result = JSON.parse(jsonText) as {
+      emojiWords: Array<{ index: number; word: string; emoji: string }>;
+    };
+
+    // Create a map of word indices to emojis
+    const emojiMap = new Map(
+      result.emojiWords.map(ew => [ew.index, ew.emoji])
+    );
+
+    // Add emojis to the words array
+    return words.map((word, index) => ({
+      ...word,
+      emoji: emojiMap.get(index),
+    }));
+  } catch (error) {
+    console.error('Failed to parse emoji response:', error);
+    // Return original words without emojis if parsing fails
+    return words;
+  }
 }
 export async function generateVideoScenes(
   script: string,

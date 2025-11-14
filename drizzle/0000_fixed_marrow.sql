@@ -88,6 +88,8 @@ CREATE TABLE "video" (
 	"status" "video_status" DEFAULT 'PENDING' NOT NULL,
 	"artStyle" text,
 	"captionHighlightColor" text DEFAULT '#FFD700',
+	"captionPosition" text DEFAULT 'bottom',
+	"emojiCaptions" boolean DEFAULT false,
 	"title" text,
 	"script" text,
 	"voiceOverUrl" text,

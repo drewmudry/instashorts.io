@@ -105,7 +105,14 @@ new Worker(
       await generateVoiceoverWithTimestamps(script, voiceId);
 
     // Process alignment
-    const words = convertCharactersToWords(alignment);
+    let words = convertCharactersToWords(alignment);
+    
+    // Add emojis if enabled
+    if (videoRecord?.emojiCaptions) {
+      const { addEmojisToWords } = await import("@/lib/ai/gemini");
+      words = await addEmojisToWords(words, script, videoRecord.theme);
+    }
+    
     const srtContent = convertWordsToSRT(words);
 
     // Upload to GCS

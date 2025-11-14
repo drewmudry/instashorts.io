@@ -22,6 +22,7 @@ export async function createVideo(formData: FormData) {
   const artStyle = formData.get("artStyle") as string;
   const captionHighlightColor = (formData.get("captionHighlightColor") as string) || "#FFD700";
   const captionPosition = (formData.get("captionPosition") as string) || "bottom";
+  const emojiCaptions = formData.get("emojiCaptions") === "true";
 
   if (!theme) {
     return { error: "Theme is required" };
@@ -41,6 +42,7 @@ export async function createVideo(formData: FormData) {
       artStyle: artStyle,
       captionHighlightColor: captionHighlightColor,
       captionPosition: captionPosition,
+      emojiCaptions: emojiCaptions,
       userId: sessionData.user.id,
       status: "PENDING", // From your schema.ts
     });

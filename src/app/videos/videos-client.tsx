@@ -33,6 +33,7 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
   const [captionColor, setCaptionColor] = useState<string>("#FFD700");
   const [isCustomColor, setIsCustomColor] = useState<boolean>(false);
   const [captionPosition, setCaptionPosition] = useState<string>("bottom");
+  const [emojiCaptions, setEmojiCaptions] = useState<boolean>(false);
 
   // Preset colors for caption highlights
   const presetColors = [
@@ -61,6 +62,11 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
 
   const handleCreateVideo = async (formData: FormData) => {
     startTransition(async () => {
+      // Add emoji captions to form data
+      if (emojiCaptions) {
+        formData.set("emojiCaptions", "true");
+      }
+      
       const result = await createVideo(formData);
       if (result?.error) {
         alert(result.error);
@@ -70,6 +76,7 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
         setCaptionColor("#FFD700");
         setIsCustomColor(false);
         setCaptionPosition("bottom");
+        setEmojiCaptions(false);
         setIsOpen(false);
         await loadVideos();
       }
@@ -321,6 +328,29 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
                   name="captionPosition"
                   value={captionPosition}
                 />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="emojiCaptions"
+                    name="emojiCaptions"
+                    checked={emojiCaptions}
+                    onChange={(e) => setEmojiCaptions(e.target.checked)}
+                    className="h-4 w-4 rounded border-zinc-300 text-yellow-500 focus:ring-yellow-500"
+                    disabled={isSubmitting}
+                  />
+                  <label
+                    htmlFor="emojiCaptions"
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Add emoji captions
+                  </label>
+                </div>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 ml-6">
+                  Relevant emojis will appear above key words as they're spoken
+                </p>
               </div>
 
               <DialogFooter>

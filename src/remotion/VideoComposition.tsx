@@ -14,6 +14,7 @@ interface WordTimestamp {
 	word: string;
 	start: number;
 	end: number;
+	emoji?: string;
 }
 
 interface Scene {
@@ -171,6 +172,24 @@ const Caption: React.FC<{
 		}
 	};
 
+	// Collect all emojis from words that are currently being spoken or were recently spoken
+	const currentEmojis = wordsToShow
+		.map((word, index) => {
+			const actualWordIndex = pageStartIndex + index;
+			const isCurrentWord = actualWordIndex === currentSpokenWordIndex;
+			// Show emoji if word has an emoji and is currently being spoken, or was just spoken (within the word's duration)
+			if (word.emoji && currentTime >= word.start && currentTime <= word.end) {
+				return {
+					emoji: word.emoji,
+					start: word.start,
+					end: word.end,
+					word: word.word,
+				};
+			}
+			return null;
+		})
+		.filter((item): item is { emoji: string; start: number; end: number; word: string } => item !== null);
+
 	return (
 		<AbsoluteFill
 			style={{
@@ -181,53 +200,120 @@ const Caption: React.FC<{
 			<div
 				style={{
 					display: 'flex',
-					flexWrap: 'wrap',
-					justifyContent: 'center',
+					flexDirection: 'column',
 					alignItems: 'center',
-					gap: '12px',
+					gap: '16px',
 					maxWidth: '85%',
 					opacity,
 					transform: `translateY(${translateY}px) scale(${scale})`,
 					textAlign: 'center',
 				}}
 			>
-				{wordsToShow.map((word, index) => {
-					// Calculate the actual word index in the full words array
-					const actualWordIndex = pageStartIndex + index;
-					// Check if this word is currently being spoken
-					const isCurrentWord = actualWordIndex === currentSpokenWordIndex;
-					// Check if this word has already been spoken (for dimming effect, optional)
-					const hasBeenSpoken = actualWordIndex < currentSpokenWordIndex;
-					
-					return (
-						<span
-							key={`${word.word}-${word.start}-${actualWordIndex}`}
-							style={{
-								color: isCurrentWord ? highlightColor : 'white',
-								fontSize: 72,
-								fontWeight: 900,
-								fontStyle: 'italic',
-								fontFamily: 'Arial, sans-serif',
-								textTransform: 'uppercase',
-								textShadow: `
-									-3px -3px 0 #000,
-									3px -3px 0 #000,
-									-3px 3px 0 #000,
-									3px 3px 0 #000,
-									-2px -2px 0 #000,
-									2px -2px 0 #000,
-									-2px 2px 0 #000,
-									2px 2px 0 #000,
-									0 0 8px #000
-								`,
-								letterSpacing: '0.05em',
-								transition: 'color 0.1s ease',
-							}}
-						>
-							{word.word}
-						</span>
-					);
-				})}
+				{/* Words row */}
+				<div
+					style={{
+						display: 'flex',
+						flexWrap: 'wrap',
+						justifyContent: 'center',
+						alignItems: 'center',
+						gap: '12px',
+					}}
+				>
+					{wordsToShow.map((word, index) => {
+						// Calculate the actual word index in the full words array
+						const actualWordIndex = pageStartIndex + index;
+						// Check if this word is currently being spoken
+						const isCurrentWord = actualWordIndex === currentSpokenWordIndex;
+						// Check if this word has already been spoken (for dimming effect, optional)
+						const hasBeenSpoken = actualWordIndex < currentSpokenWordIndex;
+						
+						return (
+							<span
+								key={`${word.word}-${word.start}-${actualWordIndex}`}
+								style={{
+									color: isCurrentWord ? highlightColor : 'white',
+									fontSize: 64,
+									fontWeight: 900,
+									fontStyle: 'italic',
+									fontFamily: 'Arial, sans-serif',
+									textTransform: 'uppercase',
+									textShadow: `
+										-3px -3px 0 #000,
+										3px -3px 0 #000,
+										-3px 3px 0 #000,
+										3px 3px 0 #000,
+										-2px -2px 0 #000,
+										2px -2px 0 #000,
+										-2px 2px 0 #000,
+										2px 2px 0 #000,
+										0 0 8px #000
+									`,
+									letterSpacing: '0.05em',
+									transition: 'color 0.1s ease',
+								}}
+							>
+								{word.word}
+							</span>
+						);
+					})}
+				</div>
+
+				{/* Emojis row - displayed below the words */}
+				{currentEmojis.length > 0 && (
+					<div
+						style={{
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center',
+							gap: '20px',
+							flexWrap: 'wrap',
+						}}
+					>
+						{currentEmojis.map((emojiData, index) => {
+							const wordDuration = emojiData.end - emojiData.start;
+							
+							// Fade in quickly at start, stay visible during word, fade out at end
+							const fadeInDuration = Math.min(0.1, wordDuration * 0.2);
+							const fadeOutDuration = Math.min(0.15, wordDuration * 0.3);
+							
+							const emojiOpacity = interpolate(
+								currentTime,
+								[emojiData.start, emojiData.start + fadeInDuration, emojiData.end - fadeOutDuration, emojiData.end],
+								[0, 1, 1, 0],
+								{
+									extrapolateLeft: 'clamp',
+									extrapolateRight: 'clamp',
+								}
+							);
+
+							const emojiScale = interpolate(
+								currentTime - emojiData.start,
+								[0, 0.1, 0.2],
+								[0, 1.2, 1],
+								{
+									easing: Easing.out(Easing.back(1.5)),
+									extrapolateLeft: 'clamp',
+									extrapolateRight: 'clamp',
+								}
+							);
+
+							return (
+								<span
+									key={`${emojiData.emoji}-${emojiData.start}-${index}`}
+									style={{
+										fontSize: 96,
+										opacity: emojiOpacity,
+										transform: `scale(${emojiScale})`,
+										filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+										pointerEvents: 'none',
+									}}
+								>
+									{emojiData.emoji}
+								</span>
+							);
+						})}
+					</div>
+				)}
 			</div>
 		</AbsoluteFill>
 	);
