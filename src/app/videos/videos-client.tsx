@@ -118,9 +118,6 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Video</DialogTitle>
-              <DialogDescription>
-                Enter a theme and customize your video settings.
-              </DialogDescription>
             </DialogHeader>
             <form
               ref={formRef}
@@ -132,13 +129,13 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
                   htmlFor="theme"
                   className="block text-sm font-medium mb-2"
                 >
-                  Theme
+                  Topic
                 </label>
                 <input
                   id="theme"
                   type="text"
                   name="theme"
-                  placeholder="Enter a theme for your video..."
+                  placeholder="Enter a topic for your video..."
                   required
                   className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800"
                   disabled={isSubmitting}
