@@ -19,6 +19,7 @@ interface VideoCompositionProps {
 	audioUrl: string;
 	words: WordTimestamp[];
 	captionHighlightColor?: string;
+	captionPosition?: "top" | "middle" | "bottom";
 }
 
 export const RemotionRoot: React.FC = () => {
@@ -35,6 +36,7 @@ export const RemotionRoot: React.FC = () => {
 				audioUrl: '',
 				words: [],
 				captionHighlightColor: '#FFD700',
+				captionPosition: 'bottom',
 			}}
 		/>
 	);

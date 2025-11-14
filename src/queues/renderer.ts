@@ -83,6 +83,7 @@ new Worker(
       console.log(`[Renderer] Scenes count: ${scenesForRender.length}`);
       console.log(`[Renderer] Words count: ${captionsData.words.length}`);
       console.log(`[Renderer] Caption color: ${videoRecord.captionHighlightColor || '#FFD700'}`);
+      console.log(`[Renderer] Caption position: ${videoRecord.captionPosition || 'bottom'}`);
       console.log(`[Renderer] Output path: ${outputPath}`);
       
       const { renderVideo } = await import("@/remotion/render");
@@ -92,6 +93,7 @@ new Worker(
         words: captionsData.words,
         outputPath,
         captionHighlightColor: videoRecord.captionHighlightColor || '#FFD700',
+        captionPosition: (videoRecord.captionPosition as "top" | "middle" | "bottom") || 'bottom',
       });
 
       console.log(`[Renderer] Video rendered successfully to ${outputPath}`);

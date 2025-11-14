@@ -126,6 +126,7 @@ export const video = pgTable("video", {
   // Video generation settings
   artStyle: text("artStyle"), // Art style preset (e.g., "Cinematic", "Digital Art", "4k realistic")
   captionHighlightColor: text("captionHighlightColor").default("#FFD700"), // Hex color for caption highlight
+  captionPosition: text("captionPosition").default("bottom"), // Caption position: "top", "middle", or "bottom"
 
   // Final generated assets
   title: text("title"),

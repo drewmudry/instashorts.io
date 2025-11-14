@@ -27,14 +27,16 @@ interface VideoCompositionProps {
 	audioUrl: string;
 	words: WordTimestamp[];
 	captionHighlightColor?: string;
+	captionPosition?: "top" | "middle" | "bottom";
 }
 
-// Caption component that displays words synchronized with audio
-// Shows multiple words at once, highlights the current word, and has floating animation
+// Caption component with page-based sliding window
+// Shows 5 words per page, all visible at once, highlighting the currently spoken word
 const Caption: React.FC<{ 
 	words: WordTimestamp[];
 	highlightColor?: string;
-}> = ({ words, highlightColor = "#FFD700" }) => {
+	position?: "top" | "middle" | "bottom";
+}> = ({ words, highlightColor = "#FFD700", position = "bottom" }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();
 	const currentTime = frame / fps;
@@ -42,23 +44,11 @@ const Caption: React.FC<{
 	if (words.length === 0) return null;
 	
 	// Don't show captions if we're before the first word or after the last word
-	if (currentTime < words[0].start - 0.5 || currentTime > words[words.length - 1].end + 0.5) {
+	if (currentTime < words[0].start - 0.3 || currentTime > words[words.length - 1].end + 0.5) {
 		return null;
 	}
 
-	// Use a variable window size between 5-10 words
-	// Calculate window size based on available words and timing
-	const getWindowSize = (startIndex: number) => {
-		const remainingWords = words.length - startIndex;
-		// Use 7-8 words as a good default, but adjust based on remaining words
-		if (remainingWords >= 10) {
-			return 8; // Use 8 words when we have plenty
-		} else if (remainingWords >= 7) {
-			return 7; // Use 7 words when we have enough
-		} else {
-			return Math.min(remainingWords, 5); // Use at least 5, or whatever is left
-		}
-	};
+	const WORDS_PER_PAGE = 5;
 
 	// Find which word is currently being spoken
 	const getCurrentSpokenWordIndex = () => {
@@ -67,66 +57,66 @@ const Caption: React.FC<{
 				return i;
 			}
 		}
-		return -1; // No word currently being spoken
+		
+		// If no word is currently being spoken, find the most recent word that finished
+		for (let i = words.length - 1; i >= 0; i--) {
+			if (currentTime > words[i].end) {
+				return i;
+			}
+		}
+		
+		return -1;
 	};
 
 	const currentSpokenWordIndex = getCurrentSpokenWordIndex();
 
-	// Determine the window of words to show
-	// The window advances when the last word in the current window finishes
-	const getWindowStartIndex = () => {
-		let windowStart = 0;
-		
-		// Find the correct window by checking when the last word of each potential window has finished
-		for (let i = 0; i < words.length; i++) {
-			const windowSize = getWindowSize(i);
-			const windowEndIndex = i + windowSize - 1;
-			
-			if (windowEndIndex >= words.length) {
-				// Not enough words left, use this window
-				break;
-			}
-			
-			const windowEndWord = words[windowEndIndex];
-			
-			// If the last word of this window has finished, we can advance to the next window
-			if (currentTime > windowEndWord.end) {
-				windowStart = i + 1;
-			} else {
-				// We've found the correct window - the last word hasn't finished yet
-				break;
-			}
+	// Determine which page we're on based on the currently spoken word
+	// Each page shows WORDS_PER_PAGE words (e.g., 0-4, 5-9, 10-14, etc.)
+	const getCurrentPage = () => {
+		if (currentSpokenWordIndex === -1) {
+			return 0;
 		}
-		
-		// Ensure we don't go past the end
-		const finalWindowSize = getWindowSize(windowStart);
-		return Math.min(windowStart, Math.max(0, words.length - finalWindowSize));
+		return Math.floor(currentSpokenWordIndex / WORDS_PER_PAGE);
 	};
 
-	const windowStartIndex = getWindowStartIndex();
-	const windowSize = getWindowSize(windowStartIndex);
-	const wordsToShow = words.slice(windowStartIndex, windowStartIndex + windowSize);
+	const currentPage = getCurrentPage();
+	const pageStartIndex = currentPage * WORDS_PER_PAGE;
+	const pageEndIndex = Math.min(pageStartIndex + WORDS_PER_PAGE, words.length);
+	const wordsToShow = words.slice(pageStartIndex, pageEndIndex);
 	
 	if (wordsToShow.length === 0) return null;
 
-	// Calculate floating animation (float in/out)
-	// Float in when first word of window starts, float out when last word of window ends
+	// Calculate animation based on page transitions
 	const firstWordStart = wordsToShow[0].start;
 	const lastWordEnd = wordsToShow[wordsToShow.length - 1].end;
-	const floatInDuration = 0.3; // 0.3 seconds to float in
-	const floatOutDuration = 0.3; // 0.3 seconds to float out
+	const floatInDuration = 0.15;
+	const floatOutDuration = 0.15;
 	
 	let translateY = 0;
 	let opacity = 1;
+	let scale = 1;
 
-	// Only show the window if we're within its time range
-	if (currentTime < firstWordStart || currentTime > lastWordEnd) {
-		// Window hasn't started yet or has completely finished - don't show it
+	// Determine if we're in the animation period for this page
+	const isBeforePageStart = currentTime < firstWordStart - 0.1;
+	const isAfterPageEnd = currentTime > lastWordEnd + 0.1;
+	const isInFloatIn = currentTime >= firstWordStart - 0.1 && currentTime < firstWordStart + floatInDuration;
+	const isInFloatOut = currentTime > lastWordEnd - floatOutDuration && currentTime <= lastWordEnd + 0.1;
+
+	if (isBeforePageStart) {
+		// Before this page starts
 		opacity = 0;
-	} else if (currentTime >= firstWordStart && currentTime < firstWordStart + floatInDuration) {
-		// Float in
-		const progress = (currentTime - firstWordStart) / floatInDuration;
-		translateY = interpolate(progress, [0, 1], [30, 0], {
+	} else if (isAfterPageEnd) {
+		// After this page ends
+		opacity = 0;
+	} else if (isInFloatIn) {
+		// Float in animation
+		const progress = (currentTime - (firstWordStart - 0.1)) / floatInDuration;
+		translateY = interpolate(progress, [0, 1], [20, 0], {
+			easing: Easing.out(Easing.ease),
+			extrapolateLeft: 'clamp',
+			extrapolateRight: 'clamp',
+		});
+		scale = interpolate(progress, [0, 1], [0.85, 1], {
 			easing: Easing.out(Easing.ease),
 			extrapolateLeft: 'clamp',
 			extrapolateRight: 'clamp',
@@ -136,10 +126,15 @@ const Caption: React.FC<{
 			extrapolateLeft: 'clamp',
 			extrapolateRight: 'clamp',
 		});
-	} else if (currentTime > lastWordEnd - floatOutDuration && currentTime <= lastWordEnd) {
-		// Float out
+	} else if (isInFloatOut) {
+		// Float out animation
 		const progress = (currentTime - (lastWordEnd - floatOutDuration)) / floatOutDuration;
-		translateY = interpolate(progress, [0, 1], [0, -30], {
+		translateY = interpolate(progress, [0, 1], [0, -20], {
+			easing: Easing.in(Easing.ease),
+			extrapolateLeft: 'clamp',
+			extrapolateRight: 'clamp',
+		});
+		scale = interpolate(progress, [0, 1], [1, 0.85], {
 			easing: Easing.in(Easing.ease),
 			extrapolateLeft: 'clamp',
 			extrapolateRight: 'clamp',
@@ -151,12 +146,35 @@ const Caption: React.FC<{
 		});
 	}
 
+	// Calculate positioning based on position prop
+	const getPositionStyles = () => {
+		switch (position) {
+			case "top":
+				return {
+					justifyContent: 'flex-start',
+					alignItems: 'center',
+					paddingTop: '10%',
+				};
+			case "middle":
+				return {
+					justifyContent: 'center',
+					alignItems: 'center',
+					paddingTop: 0,
+				};
+			case "bottom":
+			default:
+				return {
+					justifyContent: 'flex-end',
+					alignItems: 'center',
+					paddingBottom: '10%',
+				};
+		}
+	};
+
 	return (
 		<AbsoluteFill
 			style={{
-				justifyContent: 'flex-end',
-				alignItems: 'center',
-				paddingBottom: 100,
+				...getPositionStyles(),
 				zIndex: 10,
 			}}
 		>
@@ -166,36 +184,44 @@ const Caption: React.FC<{
 					flexWrap: 'wrap',
 					justifyContent: 'center',
 					alignItems: 'center',
-					gap: '8px',
-					padding: '20px 40px',
-					maxWidth: '90%',
+					gap: '12px',
+					maxWidth: '85%',
 					opacity,
-					transform: `translateY(${translateY}px)`,
-					transition: 'opacity 0.1s, transform 0.1s',
+					transform: `translateY(${translateY}px) scale(${scale})`,
+					textAlign: 'center',
 				}}
 			>
 				{wordsToShow.map((word, index) => {
 					// Calculate the actual word index in the full words array
-					const actualWordIndex = windowStartIndex + index;
+					const actualWordIndex = pageStartIndex + index;
 					// Check if this word is currently being spoken
 					const isCurrentWord = actualWordIndex === currentSpokenWordIndex;
+					// Check if this word has already been spoken (for dimming effect, optional)
+					const hasBeenSpoken = actualWordIndex < currentSpokenWordIndex;
 					
 					return (
 						<span
 							key={`${word.word}-${word.start}-${actualWordIndex}`}
 							style={{
 								color: isCurrentWord ? highlightColor : 'white',
-								fontSize: 48,
-								fontWeight: 'bold',
+								fontSize: 72,
+								fontWeight: 900,
+								fontStyle: 'italic',
+								fontFamily: 'Arial, sans-serif',
+								textTransform: 'uppercase',
 								textShadow: `
+									-3px -3px 0 #000,
+									3px -3px 0 #000,
+									-3px 3px 0 #000,
+									3px 3px 0 #000,
 									-2px -2px 0 #000,
 									2px -2px 0 #000,
 									-2px 2px 0 #000,
 									2px 2px 0 #000,
-									0 0 4px #000,
-									0 0 4px #000
+									0 0 8px #000
 								`,
-								transition: 'color 0.15s ease',
+								letterSpacing: '0.05em',
+								transition: 'color 0.1s ease',
 							}}
 						>
 							{word.word}
@@ -282,6 +308,7 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
 	audioUrl,
 	words,
 	captionHighlightColor,
+	captionPosition = "bottom",
 }) => {
 	const { durationInFrames, fps } = useVideoConfig();
 
@@ -322,8 +349,7 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
 			})}
 
 			{/* Captions */}
-			<Caption words={words} highlightColor={captionHighlightColor} />
+			<Caption words={words} highlightColor={captionHighlightColor} position={captionPosition} />
 		</AbsoluteFill>
 	);
 };
-

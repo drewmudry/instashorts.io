@@ -32,6 +32,7 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
   const [selectedArtStyle, setSelectedArtStyle] = useState<string>("");
   const [captionColor, setCaptionColor] = useState<string>("#FFD700");
   const [isCustomColor, setIsCustomColor] = useState<boolean>(false);
+  const [captionPosition, setCaptionPosition] = useState<string>("bottom");
 
   // Preset colors for caption highlights
   const presetColors = [
@@ -68,6 +69,7 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
         setSelectedArtStyle("");
         setCaptionColor("#FFD700");
         setIsCustomColor(false);
+        setCaptionPosition("bottom");
         setIsOpen(false);
         await loadVideos();
       }
@@ -281,6 +283,43 @@ export function VideosClient({ initialVideos }: VideosClientProps) {
                   type="hidden"
                   name="captionHighlightColor"
                   value={captionColor}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Caption Position
+                </label>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                  Choose where captions appear in the video
+                </p>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  {(["top", "middle", "bottom"] as const).map((position) => (
+                    <button
+                      key={position}
+                      type="button"
+                      onClick={() => setCaptionPosition(position)}
+                      className={`
+                        px-4 py-3 rounded-lg border-2 transition-all text-sm font-medium
+                        hover:scale-105 hover:shadow-md
+                        ${captionPosition === position
+                          ? "border-yellow-500 dark:border-yellow-500 ring-2 ring-yellow-500/20 shadow-sm bg-yellow-50 dark:bg-yellow-900/20"
+                          : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 bg-white dark:bg-zinc-800"
+                        }
+                      `}
+                      disabled={isSubmitting}
+                    >
+                      {position.charAt(0).toUpperCase() + position.slice(1)}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Hidden input for form submission */}
+                <input
+                  type="hidden"
+                  name="captionPosition"
+                  value={captionPosition}
                 />
               </div>
 

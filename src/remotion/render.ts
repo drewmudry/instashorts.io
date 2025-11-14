@@ -17,6 +17,7 @@ interface RenderVideoOptions {
 	}>;
 	outputPath: string;
 	captionHighlightColor?: string;
+	captionPosition?: "top" | "middle" | "bottom";
 }
 
 /**
@@ -28,6 +29,7 @@ export async function renderVideo({
 	words,
 	outputPath,
 	captionHighlightColor,
+	captionPosition,
 }: RenderVideoOptions): Promise<string> {
 	// Get the entry point
 	const entryPoint = path.resolve(process.cwd(), 'src/remotion/index.tsx');
@@ -61,6 +63,7 @@ export async function renderVideo({
 			audioUrl,
 			words,
 			captionHighlightColor,
+			captionPosition,
 		},
 	});
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { video } from "@/db/schema";
 import { Play, Clock, Calendar, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +15,7 @@ interface VideoCardProps {
 
 export function VideoCard({ video, size = "default" }: VideoCardProps) {
   const isCompact = size === "compact";
+  const [duration, setDuration] = useState<number | null>(null);
   
   const formatStatus = (status: string) => {
     switch (status) {
@@ -70,6 +72,12 @@ export function VideoCard({ video, size = "default" }: VideoCardProps) {
     }).format(new Date(date));
   };
 
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   return (
     <Card className={`group hover:shadow-lg transition-all duration-200 ${
       isCompact ? "h-32" : "h-auto"
@@ -88,6 +96,10 @@ export function VideoCard({ video, size = "default" }: VideoCardProps) {
               className="w-full h-full object-cover"
               preload="metadata"
               muted
+              onLoadedMetadata={(e) => {
+                const videoEl = e.target as HTMLVideoElement;
+                setDuration(videoEl.duration);
+              }}
               onMouseEnter={(e) => {
                 const videoEl = e.target as HTMLVideoElement;
                 videoEl.play();
@@ -120,12 +132,11 @@ export function VideoCard({ video, size = "default" }: VideoCardProps) {
           </div>
 
           {/* Duration Badge (if available) */}
-          {video.videoUrl && (
+          {video.videoUrl && duration && (
             <div className="absolute bottom-2 right-2">
               <span className="px-2 py-1 bg-black/70 text-white rounded text-xs flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {/* You might want to add duration to your schema */}
-                0:30
+                {formatDuration(duration)}
               </span>
             </div>
           )}
