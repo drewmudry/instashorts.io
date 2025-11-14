@@ -172,23 +172,38 @@ const Caption: React.FC<{
 		}
 	};
 
-	// Collect all emojis from words that are currently being spoken or were recently spoken
+	// Check if any words on the current page have emojis
+	const hasEmojisOnPage = wordsToShow.some(word => word.emoji);
+
+	// Collect all emojis from words, extending their display time by 1.5x
 	const currentEmojis = wordsToShow
 		.map((word, index) => {
 			const actualWordIndex = pageStartIndex + index;
-			const isCurrentWord = actualWordIndex === currentSpokenWordIndex;
-			// Show emoji if word has an emoji and is currently being spoken, or was just spoken (within the word's duration)
-			if (word.emoji && currentTime >= word.start && currentTime <= word.end) {
+			if (!word.emoji) return null;
+
+			// Safety check: ensure valid word timing
+			if (!word.start || !word.end || word.end <= word.start || !isFinite(word.start) || !isFinite(word.end)) {
+				return null;
+			}
+
+			const wordDuration = word.end - word.start;
+			const extensionTime = wordDuration * 0.25; // Extend by 25% on each side (50% total = 1.5x)
+			const extendedStart = Math.max(0, word.start - extensionTime); // Don't go below 0
+			const extendedEnd = word.end + extensionTime;
+
+			// Show emoji if we're within the extended time window
+			if (currentTime >= extendedStart && currentTime <= extendedEnd && extendedEnd > extendedStart) {
 				return {
 					emoji: word.emoji,
-					start: word.start,
-					end: word.end,
+					start: extendedStart,
+					end: extendedEnd,
+					originalDuration: wordDuration,
 					word: word.word,
 				};
 			}
 			return null;
 		})
-		.filter((item): item is { emoji: string; start: number; end: number; word: string } => item !== null);
+		.filter((item): item is { emoji: string; start: number; end: number; originalDuration: number; word: string } => item !== null);
 
 	return (
 		<AbsoluteFill
@@ -209,7 +224,7 @@ const Caption: React.FC<{
 					textAlign: 'center',
 				}}
 			>
-				{/* Words row */}
+				{/* Words row - fixed height container to prevent jumping */}
 				<div
 					style={{
 						display: 'flex',
@@ -217,6 +232,7 @@ const Caption: React.FC<{
 						justifyContent: 'center',
 						alignItems: 'center',
 						gap: '12px',
+						minHeight: hasEmojisOnPage ? undefined : '100px', // Reserve space when no emojis
 					}}
 				>
 					{wordsToShow.map((word, index) => {
@@ -258,27 +274,38 @@ const Caption: React.FC<{
 					})}
 				</div>
 
-				{/* Emojis row - displayed below the words */}
-				{currentEmojis.length > 0 && (
-					<div
-						style={{
-							display: 'flex',
-							justifyContent: 'center',
-							alignItems: 'center',
-							gap: '20px',
-							flexWrap: 'wrap',
-						}}
-					>
-						{currentEmojis.map((emojiData, index) => {
-							const wordDuration = emojiData.end - emojiData.start;
-							
-							// Fade in quickly at start, stay visible during word, fade out at end
-							const fadeInDuration = Math.min(0.1, wordDuration * 0.2);
-							const fadeOutDuration = Math.min(0.15, wordDuration * 0.3);
-							
+				{/* Emojis row - fixed height container to prevent jumping */}
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
+						gap: '20px',
+						flexWrap: 'wrap',
+						minHeight: '110px', // Fixed height to always reserve space for emojis
+					}}
+				>
+					{currentEmojis.map((emojiData, index) => {
+						const totalDuration = emojiData.end - emojiData.start;
+						
+						// Safety check: ensure valid duration
+						if (totalDuration <= 0 || !isFinite(totalDuration)) {
+							return null;
+						}
+						
+						// Adjust fade durations based on extended time
+						const fadeInDuration = Math.max(0.05, Math.min(0.15, totalDuration * 0.2));
+						const fadeOutDuration = Math.max(0.05, Math.min(0.2, totalDuration * 0.25));
+						
+						// Ensure fade points are valid
+						const fadeInEnd = emojiData.start + fadeInDuration;
+						const fadeOutStart = Math.max(fadeInEnd, emojiData.end - fadeOutDuration);
+						
+						// Only render if we have valid time points
+						if (fadeOutStart >= fadeInEnd && emojiData.end > emojiData.start) {
 							const emojiOpacity = interpolate(
 								currentTime,
-								[emojiData.start, emojiData.start + fadeInDuration, emojiData.end - fadeOutDuration, emojiData.end],
+								[emojiData.start, fadeInEnd, fadeOutStart, emojiData.end],
 								[0, 1, 1, 0],
 								{
 									extrapolateLeft: 'clamp',
@@ -288,7 +315,7 @@ const Caption: React.FC<{
 
 							const emojiScale = interpolate(
 								currentTime - emojiData.start,
-								[0, 0.1, 0.2],
+								[0, 0.15, 0.25],
 								[0, 1.2, 1],
 								{
 									easing: Easing.out(Easing.back(1.5)),
@@ -311,9 +338,11 @@ const Caption: React.FC<{
 									{emojiData.emoji}
 								</span>
 							);
-						})}
-					</div>
-				)}
+						}
+						
+						return null;
+					})}
+				</div>
 			</div>
 		</AbsoluteFill>
 	);
