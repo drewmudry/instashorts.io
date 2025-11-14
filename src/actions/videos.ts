@@ -1,5 +1,3 @@
-// @ts-nocheck - Drizzle type compatibility issues due to pnpm peer dependency resolution
-// These are false positive type errors - the code works correctly at runtime
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -59,8 +57,9 @@ export async function createVideo(formData: FormData) {
     revalidatePath("/videos");
 
     return { success: true, videoId: newVideoId };
-  } catch (e: any) {
-    return { error: `Failed to create video: ${e.message}` };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    return { error: `Failed to create video: ${errorMessage}` };
   }
 }
 
@@ -82,8 +81,9 @@ export async function getVideos() {
       .orderBy(desc(video.createdAt)); // Show newest first
 
     return userVideos;
-  } catch (e: any) {
-    console.error("Failed to fetch videos:", e.message);
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    console.error("Failed to fetch videos:", errorMessage);
     return [];
   }
 }
@@ -106,8 +106,9 @@ export async function getVideosNotInSeries() {
       .orderBy(desc(video.createdAt));
 
     return userVideos;
-  } catch (e: any) {
-    console.error("Failed to fetch videos not in series:", e.message);
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    console.error("Failed to fetch videos not in series:", errorMessage);
     return [];
   }
 }
@@ -133,8 +134,9 @@ export async function getRecentVideos() {
       .limit(3);
 
     return recentVideos;
-  } catch (e: any) {
-    console.error("Failed to fetch recent videos:", e.message);
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    console.error("Failed to fetch recent videos:", errorMessage);
     return [];
   }
 }

@@ -1,10 +1,8 @@
-// @ts-nocheck - Drizzle type compatibility issues due to pnpm peer dependency resolution
-// These are false positive type errors - the code works correctly at runtime
 import { Worker, Job } from "bullmq";
 import { connection } from "./client";
 import { db } from "@/index";
 import { video, scene } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { uploadBufferToGCS } from "@/lib/gcs";
 import { nanoid } from "nanoid";
 import { readFileSync, unlinkSync } from "fs";
@@ -51,7 +49,15 @@ new Worker(
       .select()
       .from(scene)
       .where(eq(scene.videoId, videoId))
-      .orderBy(scene.sceneIndex);
+      .orderBy(asc(scene.sceneIndex)) as Array<{
+        id: string;
+        sceneIndex: number;
+        imageUrl: string | null;
+        imagePrompt: string | null;
+        videoId: string;
+        createdAt: Date;
+        updatedAt: Date;
+      }>;
 
     if (scenes.length === 0) {
       throw new Error(`No scenes found for video ${videoId}`);
@@ -140,9 +146,14 @@ new Worker(
       console.log(`[Renderer] Video ${videoId} completed successfully: ${videoUrl}`);
 
       return { videoUrl };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       console.error(`[Renderer] Error rendering video ${videoId}:`, error);
-      console.error(`[Renderer] Error stack:`, error.stack);
+      if (errorStack) {
+        console.error(`[Renderer] Error stack:`, errorStack);
+      }
       
       // Mark as failed
       await db
@@ -156,7 +167,7 @@ new Worker(
         console.log(`[Renderer] Cleaned up failed render file: ${outputPath}`);
       } catch {}
 
-      throw new Error(`Failed to render video ${videoId}: ${error.message}`);
+      throw new Error(`Failed to render video ${videoId}: ${errorMessage}`);
     }
   },
   {
@@ -166,7 +177,7 @@ new Worker(
       attempts: 2,
       backoff: { type: 'exponential', delay: 5000 }
     }
-  }
+  } as any
 );
 
 console.log("🎬 Renderer started and listening to render queue...");

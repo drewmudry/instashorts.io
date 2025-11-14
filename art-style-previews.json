@@ -1,0 +1,86 @@
+[
+  {
+    "id": "collage",
+    "name": "Collage",
+    "description": "Layered, mixed-media aesthetic",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/collage-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/collage-cleopatra.png"
+  },
+  {
+    "id": "cinematic",
+    "name": "Cinematic",
+    "description": "Film-like, dramatic visuals",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/cinematic-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/cinematic-cleopatra.png"
+  },
+  {
+    "id": "digital-art",
+    "name": "Digital Art",
+    "description": "Modern digital illustration",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/digital-art-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/digital-art-cleopatra.png"
+  },
+  {
+    "id": "neon-futuristic",
+    "name": "Neon Futuristic",
+    "description": "Cyberpunk, neon-lit scenes",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/neon-futuristic-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/neon-futuristic-cleopatra.png"
+  },
+  {
+    "id": "comic-book",
+    "name": "Comic Book",
+    "description": "Bold, stylized comic art",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/comic-book-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/comic-book-cleopatra.png"
+  },
+  {
+    "id": "playground",
+    "name": "Playground",
+    "description": "Bright, playful cartoon style",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/playground-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/playground-cleopatra.png"
+  },
+  {
+    "id": "4k-realistic",
+    "name": "4k Realistic",
+    "description": "Ultra-realistic, high detail",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/4k-realistic-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/4k-realistic-cleopatra.png"
+  },
+  {
+    "id": "cartoon",
+    "name": "Cartoon",
+    "description": "Classic animated style",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/cartoon-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/cartoon-cleopatra.png"
+  },
+  {
+    "id": "kawaii",
+    "name": "Kawaii",
+    "description": "Cute, Japanese-inspired",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/kawaii-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/kawaii-cleopatra.png"
+  },
+  {
+    "id": "anime",
+    "name": "Anime",
+    "description": "Japanese animation style",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/anime-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/anime-cleopatra.png"
+  },
+  {
+    "id": "line-art",
+    "name": "Line Art",
+    "description": "Minimalist line drawings",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/line-art-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/line-art-cleopatra.png"
+  },
+  {
+    "id": "japanese-ink",
+    "name": "Japanese Ink",
+    "description": "Traditional ink painting",
+    "icarusImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/japanese-ink-icarus.png",
+    "cleopatraImageUrl": "https://storage.googleapis.com/instashorts-content/art-styles/japanese-ink-cleopatra.png"
+  }
+]

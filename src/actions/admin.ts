@@ -1,5 +1,3 @@
-// @ts-nocheck - Drizzle type compatibility issues due to pnpm peer dependency resolution
-// These are false positive type errors - the code works correctly at runtime
 "use server";
 
 import { headers } from "next/headers";
@@ -112,9 +110,10 @@ export async function getQueueStats() {
         },
       ],
     };
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Error fetching queue stats:", error);
-    return { error: error.message || "Failed to fetch queue stats" };
+    return { error: errorMessage || "Failed to fetch queue stats" };
   }
 }
 

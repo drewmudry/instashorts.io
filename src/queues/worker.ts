@@ -1,5 +1,3 @@
-// @ts-nocheck - Drizzle type compatibility issues due to pnpm peer dependency resolution
-// These are false positive type errors - the code works correctly at runtime
 import { Worker, Job } from "bullmq";
 import { connection, scriptQueue, voiceoverQueue, scenesQueue, sceneImageQueue, renderQueue } from "./client";
 import { db } from "@/index";
@@ -59,7 +57,7 @@ new Worker(
       attempts: 3,
       backoff: { type: 'exponential', delay: 2000 }
     }
-  }
+  } as any
 );
 
 // ===========================
@@ -144,7 +142,7 @@ new Worker(
       attempts: 3,
       backoff: { type: 'exponential', delay: 2000 }
     }
-  }
+  } as any
 );
 
 // ===========================
@@ -206,7 +204,7 @@ new Worker(
       attempts: 3,
       backoff: { type: 'exponential', delay: 2000 }
     }
-  }
+  } as any
 );
 
 // ===========================
@@ -262,7 +260,7 @@ new Worker(
       attempts: 3,
       backoff: { type: 'exponential', delay: 2000 }
     }
-  }
+  } as any
 );
 
 // ===========================

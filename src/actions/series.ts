@@ -1,5 +1,3 @@
-// @ts-nocheck - Drizzle type compatibility issues due to pnpm peer dependency resolution
-// These are false positive type errors - the code works correctly at runtime
 "use server";
 
 import { headers } from "next/headers";
@@ -28,8 +26,9 @@ export async function getSeries() {
       .orderBy(desc(series.createdAt));
 
     return userSeries;
-  } catch (e: any) {
-    console.error("Failed to fetch series:", e.message);
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    console.error("Failed to fetch series:", errorMessage);
     return [];
   }
 }
@@ -54,8 +53,9 @@ export async function getVideosInSeries(seriesId: string) {
       .orderBy(desc(video.createdAt));
 
     return seriesVideos;
-  } catch (e: any) {
-    console.error("Failed to fetch videos in series:", e.message);
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    console.error("Failed to fetch videos in series:", errorMessage);
     return [];
   }
 }
