@@ -19,36 +19,52 @@ new Worker(
 
     console.log(`[Script Worker] Processing video ${videoId}`);
 
-    // Status remains PENDING during script generation
+    try {
+      // Status remains PENDING during script generation
 
-    // Generate script and title
-    const [script, title] = await Promise.all([
-      generateVideoScript(theme),
-      generateVideoTitle(theme),
-    ]);
+      // Generate script and title
+      const [script, title] = await Promise.all([
+        generateVideoScript(theme),
+        generateVideoTitle(theme),
+      ]);
 
-    // Update video
-    await db
-      .update(video)
-      .set({ script, title })
-      .where(eq(video.id, videoId));
+      // Update video
+      await db
+        .update(video)
+        .set({ script, title })
+        .where(eq(video.id, videoId));
 
-    console.log(`[Script Worker] Script generated for video ${videoId}`);
+      console.log(`[Script Worker] Script generated for video ${videoId}`);
 
-    // Get art style from video record
-    const [videoRecord] = await db
-      .select()
-      .from(video)
-      .where(eq(video.id, videoId))
-      .limit(1);
+      // Get art style from video record
+      const [videoRecord] = await db
+        .select()
+        .from(video)
+        .where(eq(video.id, videoId))
+        .limit(1);
 
-    // Enqueue next steps in parallel
-    await Promise.all([
-      voiceoverQueue.add("generate", { videoId, script }),
-      scenesQueue.add("generate", { videoId, script, theme, artStyle: videoRecord?.artStyle }),
-    ]);
+      // Enqueue next steps in parallel
+      await Promise.all([
+        voiceoverQueue.add("generate", { videoId, script }),
+        scenesQueue.add("generate", { videoId, script, theme, artStyle: videoRecord?.artStyle }),
+      ]);
 
-    return { script, title };
+      return { script, title };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[Script Worker] Error processing video ${videoId}:`, error);
+      
+      // Mark video as failed if this is the last attempt
+      if (job.attemptsMade >= (job.opts?.attempts || 3) - 1) {
+        await db
+          .update(video)
+          .set({ status: "FAILED" })
+          .where(eq(video.id, videoId));
+        console.error(`[Script Worker] Video ${videoId} marked as FAILED after all retries`);
+      }
+      
+      throw new Error(`Failed to generate script for video ${videoId}: ${errorMessage}`);
+    }
   },
   {
     connection,
@@ -70,77 +86,97 @@ new Worker(
 
     console.log(`[Voiceover Worker] Processing video ${videoId}`);
 
-    // Update status to GENERATING_VOICEOVER
-    await db
-      .update(video)
-      .set({ status: "GENERATING_VOICEOVER" })
-      .where(eq(video.id, videoId));
+    try {
+      // Update status to GENERATING_VOICEOVER
+      await db
+        .update(video)
+        .set({ status: "GENERATING_VOICEOVER" })
+        .where(eq(video.id, videoId));
 
-    if (!script) {
-      throw new Error(`Script not found for video ${videoId}`);
-    }
+      if (!script) {
+        throw new Error(`Script not found for video ${videoId}`);
+      }
 
-    // Get voiceId from series if available
-    const [videoRecord] = await db
-      .select()
-      .from(video)
-      .where(eq(video.id, videoId))
-      .limit(1);
-
-    let voiceId = "21m00Tcm4TlvDq8ikWAM"; // Default
-    if (videoRecord?.seriesId) {
-      const [seriesRecord] = await db
+      // Get voiceId from series if available
+      const [videoRecord] = await db
         .select()
-        .from(series)
-        .where(eq(series.id, videoRecord.seriesId))
+        .from(video)
+        .where(eq(video.id, videoId))
         .limit(1);
 
-      if (seriesRecord?.voiceId) {
-        voiceId = seriesRecord.voiceId;
+      let voiceId = "21m00Tcm4TlvDq8ikWAM"; // Default
+      if (videoRecord?.seriesId) {
+        const [seriesRecord] = await db
+          .select()
+          .from(series)
+          .where(eq(series.id, videoRecord.seriesId))
+          .limit(1);
+
+        if (seriesRecord?.voiceId) {
+          voiceId = seriesRecord.voiceId;
+        }
       }
+
+      // Generate voiceover with timestamps
+      const { audio: audioBuffer, alignment, normalizedAlignment } =
+        await generateVoiceoverWithTimestamps(script, voiceId);
+
+      // Process alignment
+      let words = convertCharactersToWords(alignment);
+      
+      // Add emojis if enabled
+      if (videoRecord?.emojiCaptions) {
+        const { addEmojisToWords } = await import("@/lib/ai/gemini");
+        words = await addEmojisToWords(words, script, videoRecord.theme);
+      }
+      
+      const srtContent = convertWordsToSRT(words);
+
+      // Upload to GCS
+      const bucketName = process.env.GCS_BUCKET_NAME || "instashorts-content";
+      const destination = `voiceovers/${videoId}/${nanoid()}.mp3`;
+      const voiceOverUrl = await uploadBufferToGCS(
+        bucketName,
+        audioBuffer,
+        destination,
+        "audio/mpeg"
+      );
+
+      // Update video
+      await db
+        .update(video)
+        .set({
+          voiceOverUrl,
+          captions_raw: { alignment, normalizedAlignment },
+          captions_processed: { words, srt: srtContent },
+        })
+        .where(eq(video.id, videoId));
+
+      console.log(`[Voiceover Worker] Voiceover generated for video ${videoId}`);
+
+      // Check if ready to render
+      await checkAndRenderVideo(videoId);
+
+      return { voiceOverUrl };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      console.error(`[Voiceover Worker] Error processing video ${videoId}:`, error);
+      if (errorStack) {
+        console.error(`[Voiceover Worker] Error stack:`, errorStack);
+      }
+      
+      // Mark video as failed if this is the last attempt
+      if (job.attemptsMade >= (job.opts?.attempts || 3) - 1) {
+        await db
+          .update(video)
+          .set({ status: "FAILED" })
+          .where(eq(video.id, videoId));
+        console.error(`[Voiceover Worker] Video ${videoId} marked as FAILED after all retries`);
+      }
+      
+      throw new Error(`Failed to generate voiceover for video ${videoId}: ${errorMessage}`);
     }
-
-    // Generate voiceover with timestamps
-    const { audio: audioBuffer, alignment, normalizedAlignment } =
-      await generateVoiceoverWithTimestamps(script, voiceId);
-
-    // Process alignment
-    let words = convertCharactersToWords(alignment);
-    
-    // Add emojis if enabled
-    if (videoRecord?.emojiCaptions) {
-      const { addEmojisToWords } = await import("@/lib/ai/gemini");
-      words = await addEmojisToWords(words, script, videoRecord.theme);
-    }
-    
-    const srtContent = convertWordsToSRT(words);
-
-    // Upload to GCS
-    const bucketName = process.env.GCS_BUCKET_NAME || "instashorts-content";
-    const destination = `voiceovers/${videoId}/${nanoid()}.mp3`;
-    const voiceOverUrl = await uploadBufferToGCS(
-      bucketName,
-      audioBuffer,
-      destination,
-      "audio/mpeg"
-    );
-
-    // Update video
-    await db
-      .update(video)
-      .set({
-        voiceOverUrl,
-        captions_raw: { alignment, normalizedAlignment },
-        captions_processed: { words, srt: srtContent },
-      })
-      .where(eq(video.id, videoId));
-
-    console.log(`[Voiceover Worker] Voiceover generated for video ${videoId}`);
-
-    // Check if ready to render
-    await checkAndRenderVideo(videoId);
-
-    return { voiceOverUrl };
   },
   {
     connection,
@@ -162,47 +198,63 @@ new Worker(
 
     console.log(`[Scenes Worker] Processing video ${videoId}`);
 
-    // Update status to GENERATING_SCENES
-    await db
-      .update(video)
-      .set({ status: "GENERATING_SCENES" })
-      .where(eq(video.id, videoId));
+    try {
+      // Update status to GENERATING_SCENES
+      await db
+        .update(video)
+        .set({ status: "GENERATING_SCENES" })
+        .where(eq(video.id, videoId));
 
-    if (!script) {
-      throw new Error(`Script not found for video ${videoId}`);
-    }
+      if (!script) {
+        throw new Error(`Script not found for video ${videoId}`);
+      }
 
-    // Determine scene count
-    const wordCount = script.split(/\s+/).length;
-    const sceneCount = wordCount < 100 ? 3 : 10;
+      // Determine scene count
+      const wordCount = script.split(/\s+/).length;
+      const sceneCount = wordCount < 100 ? 3 : 10;
 
-    // Generate scenes
-    const scenes = await generateVideoScenes(script, theme, sceneCount, artStyle);
+      // Generate scenes
+      const scenes = await generateVideoScenes(script, theme, sceneCount, artStyle);
 
-    // Store scenes
-    const sceneRecords = scenes.map((s) => ({
-      id: nanoid(),
-      videoId,
-      sceneIndex: s.sceneIndex,
-      imagePrompt: s.image_prompt,
-    }));
-
-    await db.insert(scene).values(sceneRecords);
-
-    console.log(`[Scenes Worker] Generated ${scenes.length} scenes for video ${videoId}`);
-
-    // Enqueue image generation for each scene
-    const imageJobs = sceneRecords.map((sceneRecord) =>
-      sceneImageQueue.add("generate", {
+      // Store scenes
+      const sceneRecords = scenes.map((s) => ({
+        id: nanoid(),
         videoId,
-        sceneId: sceneRecord.id,
-        imagePrompt: sceneRecord.imagePrompt,
-      })
-    );
+        sceneIndex: s.sceneIndex,
+        imagePrompt: s.image_prompt,
+      }));
 
-    await Promise.all(imageJobs);
+      await db.insert(scene).values(sceneRecords);
 
-    return { sceneCount: scenes.length };
+      console.log(`[Scenes Worker] Generated ${scenes.length} scenes for video ${videoId}`);
+
+      // Enqueue image generation for each scene
+      const imageJobs = sceneRecords.map((sceneRecord) =>
+        sceneImageQueue.add("generate", {
+          videoId,
+          sceneId: sceneRecord.id,
+          imagePrompt: sceneRecord.imagePrompt,
+        })
+      );
+
+      await Promise.all(imageJobs);
+
+      return { sceneCount: scenes.length };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[Scenes Worker] Error processing video ${videoId}:`, error);
+      
+      // Mark video as failed if this is the last attempt
+      if (job.attemptsMade >= (job.opts?.attempts || 3) - 1) {
+        await db
+          .update(video)
+          .set({ status: "FAILED" })
+          .where(eq(video.id, videoId));
+        console.error(`[Scenes Worker] Video ${videoId} marked as FAILED after all retries`);
+      }
+      
+      throw new Error(`Failed to generate scenes for video ${videoId}: ${errorMessage}`);
+    }
   },
   {
     connection,
@@ -224,41 +276,59 @@ new Worker(
 
     console.log(`[Image Worker] Processing scene ${sceneId} for video ${videoId}`);
 
-    // Update status to GENERATING_IMAGES (only if not already in a later stage)
-    await db
-      .update(video)
-      .set({ status: "GENERATING_IMAGES" })
-      .where(eq(video.id, videoId));
+    try {
+      // Update status to GENERATING_IMAGES (only if not already in a later stage)
+      await db
+        .update(video)
+        .set({ status: "GENERATING_IMAGES" })
+        .where(eq(video.id, videoId));
 
-    if (!imagePrompt) {
-      throw new Error(`Image prompt not found for scene ${sceneId}`);
+      if (!imagePrompt) {
+        throw new Error(`Image prompt not found for scene ${sceneId}`);
+      }
+
+      // Generate image
+      const imageBuffer = await generateImageFromPrompt(imagePrompt);
+
+      // Upload to GCS
+      const bucketName = process.env.GCS_BUCKET_NAME || "instashorts-content";
+      const destination = `scenes/${videoId}/${sceneId}.png`;
+      const imageUrl = await uploadBufferToGCS(
+        bucketName,
+        imageBuffer,
+        destination,
+        "image/png"
+      );
+
+      // Update scene
+      await db
+        .update(scene)
+        .set({ imageUrl })
+        .where(eq(scene.id, sceneId));
+
+      console.log(`[Image Worker] Image generated for scene ${sceneId}`);
+
+      // Check if ready to render
+      await checkAndRenderVideo(videoId);
+
+      return { imageUrl };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[Image Worker] Error processing scene ${sceneId} for video ${videoId}:`, error);
+      
+      // Mark video as failed if this is the last attempt
+      // Note: We only mark the video as failed if ALL image generation jobs fail
+      // For individual scene failures, we could track per-scene, but for now we'll
+      // let the video stay in GENERATING_IMAGES state if some scenes fail
+      // The render step will catch missing images and fail appropriately
+      if (job.attemptsMade >= (job.opts?.attempts || 3) - 1) {
+        console.error(`[Image Worker] Scene ${sceneId} failed after all retries for video ${videoId}`);
+        // Don't mark entire video as failed for a single scene failure
+        // The render step will handle missing images
+      }
+      
+      throw new Error(`Failed to generate image for scene ${sceneId}: ${errorMessage}`);
     }
-
-    // Generate image
-    const imageBuffer = await generateImageFromPrompt(imagePrompt);
-
-    // Upload to GCS
-    const bucketName = process.env.GCS_BUCKET_NAME || "instashorts-content";
-    const destination = `scenes/${videoId}/${sceneId}.png`;
-    const imageUrl = await uploadBufferToGCS(
-      bucketName,
-      imageBuffer,
-      destination,
-      "image/png"
-    );
-
-    // Update scene
-    await db
-      .update(scene)
-      .set({ imageUrl })
-      .where(eq(scene.id, sceneId));
-
-    console.log(`[Image Worker] Image generated for scene ${sceneId}`);
-
-    // Check if ready to render
-    await checkAndRenderVideo(videoId);
-
-    return { imageUrl };
   },
   {
     connection,
