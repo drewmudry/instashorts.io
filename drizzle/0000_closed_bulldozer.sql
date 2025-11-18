@@ -29,10 +29,14 @@ CREATE TABLE "scene" (
 --> statement-breakpoint
 CREATE TABLE "series" (
 	"id" text PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
 	"theme" text,
+	"artStyle" text,
 	"voiceId" text,
-	"captionStyle" jsonb,
+	"captionHighlightColor" text DEFAULT '#FFD700',
+	"captionPosition" text DEFAULT 'bottom',
+	"emojiCaptions" boolean DEFAULT false,
+	"schedule" text DEFAULT 'daily',
+	"isActive" boolean DEFAULT true NOT NULL,
 	"userId" text NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL

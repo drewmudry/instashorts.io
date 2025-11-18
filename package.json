@@ -9,6 +9,8 @@
     "lint": "eslint",
     "dev:worker": "tsx watch src/queues/worker.ts",
     "dev:renderer": "tsx watch src/queues/renderer.ts",
+    "dev:scheduler": "tsx watch src/queues/series-worker.ts",
+    "setup:scheduler": "tsx src/queues/scheduler.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",

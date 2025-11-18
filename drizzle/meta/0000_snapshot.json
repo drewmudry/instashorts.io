@@ -1,5 +1,5 @@
 {
-  "id": "c3e79d53-652b-4291-b1d0-b923c48699e7",
+  "id": "5028d8f2-b808-42a7-a499-852f5440487b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -192,14 +192,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "theme": {
           "name": "theme",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artStyle": {
+          "name": "artStyle",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -210,11 +210,40 @@
           "primaryKey": false,
           "notNull": false
         },
-        "captionStyle": {
-          "name": "captionStyle",
-          "type": "jsonb",
+        "captionHighlightColor": {
+          "name": "captionHighlightColor",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'#FFD700'"
+        },
+        "captionPosition": {
+          "name": "captionPosition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'bottom'"
+        },
+        "emojiCaptions": {
+          "name": "emojiCaptions",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "schedule": {
+          "name": "schedule",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'daily'"
+        },
+        "isActive": {
+          "name": "isActive",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
         },
         "userId": {
           "name": "userId",

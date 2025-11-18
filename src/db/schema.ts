@@ -99,13 +99,18 @@ export const verification = pgTable("verification", {
 
 
 export const series = pgTable("series", {
-  id: text("id").primaryKey(), // Assumes you provide the ID (e.g., CUID)
-  name: text("name").notNull(),
-  theme: text("theme"),
-  voiceId: text("voiceId"), 
-  captionStyle: jsonb("captionStyle"), 
+  id: text("id").primaryKey(),
+  theme: text("theme"), 
 
-  // Foreign key to the user who owns this series
+  artStyle: text("artStyle"), 
+  voiceId: text("voiceId"), 
+  captionHighlightColor: text("captionHighlightColor").default("#FFD700"),
+  captionPosition: text("captionPosition").default("bottom"),
+  emojiCaptions: boolean("emojiCaptions").default(false),
+  
+  schedule: text("schedule").default("daily"),
+  isActive: boolean("isActive").default(true).notNull(), 
+
   userId: text("userId")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
